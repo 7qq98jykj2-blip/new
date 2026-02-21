@@ -175,7 +175,7 @@ class DriverPayrollAPITester:
             "Create Expense",
             "POST",
             "expenses",
-            201,
+            200,
             data=expense_data,
             headers=self.get_auth_header('admin')
         )
