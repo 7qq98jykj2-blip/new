@@ -259,7 +259,7 @@ async def get_admin_user(user: dict = Depends(get_current_user)):
 # ============ CALCULATION HELPERS ============
 
 def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: float, settings: dict):
-    """Calculate hours worked, overtime, and food allowance"""
+    """Calculate hours worked, overtime, conveyance, and dinner allowance"""
     in_time = datetime.fromisoformat(in_time_str)
     out_time = datetime.fromisoformat(out_time_str)
     
@@ -274,14 +274,25 @@ def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: 
     # Round up to nearest 15 minutes
     overtime_minutes = int((overtime_minutes_exact + 14) // 15) * 15
     
-    # Food allowance: triggered after working standard_hours + food_trigger_hours_after_standard
-    food_trigger_total_hours = standard_hours + settings['food_trigger_hours_after_standard']
-    food_allowance_given = hours_worked >= food_trigger_total_hours
+    # Conveyance: triggered after working standard_hours + trigger_hours OR after dinner_trigger_time
+    conveyance_trigger_total_hours = standard_hours + settings['conveyance_trigger_hours_after_standard']
+    conveyance_by_hours = hours_worked >= conveyance_trigger_total_hours
+    
+    # Check if out_time is after dinner_trigger_time (e.g., "23:30")
+    dinner_trigger_time_parts = settings['dinner_trigger_time'].split(':')
+    trigger_hour = int(dinner_trigger_time_parts[0])
+    trigger_minute = int(dinner_trigger_time_parts[1])
+    trigger_time = out_time.replace(hour=trigger_hour, minute=trigger_minute, second=0, microsecond=0)
+    conveyance_by_time = out_time >= trigger_time
+    
+    conveyance_given = conveyance_by_hours or conveyance_by_time
+    dinner_given = conveyance_by_hours or conveyance_by_time  # Same conditions for both
     
     return {
         'hours_worked': round(hours_worked, 2),
         'overtime_minutes': overtime_minutes,
-        'food_allowance_given': food_allowance_given
+        'conveyance_given': conveyance_given,
+        'dinner_given': dinner_given
     }
 
 # ============ AUTH ROUTES ============
