@@ -577,8 +577,12 @@ async def get_settings(user: dict = Depends(get_current_user)):
     if not settings:
         settings = {
             'overtime_per_15min': 25.0,
-            'food_allowance_amount': 100.0,
-            'food_trigger_hours_after_standard': 2.0
+            'conveyance_amount': 75.0,
+            'dinner_amount': 200.0,
+            'conveyance_trigger_hours_after_standard': 2.0,
+            'dinner_trigger_time': '23:30',
+            'working_days_per_week': 6,
+            'days_in_month': 30
         }
         await db.settings.insert_one(settings)
     return SettingsResponse(**settings)
@@ -595,8 +599,12 @@ async def update_settings(settings_data: SettingsUpdate, user: dict = Depends(ge
     else:
         default_settings = {
             'overtime_per_15min': 25.0,
-            'food_allowance_amount': 100.0,
-            'food_trigger_hours_after_standard': 2.0,
+            'conveyance_amount': 75.0,
+            'dinner_amount': 200.0,
+            'conveyance_trigger_hours_after_standard': 2.0,
+            'dinner_trigger_time': '23:30',
+            'working_days_per_week': 6,
+            'days_in_month': 30,
             **update_data
         }
         await db.settings.insert_one(default_settings)
