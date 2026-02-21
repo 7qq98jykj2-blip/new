@@ -753,6 +753,9 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
     dinner_count = sum([1 for e in duty_entries if e.get('dinner_given', False)])
     total_dinner = dinner_count * settings['dinner_amount']
     
+    breakfast_count = sum([1 for e in duty_entries if e.get('breakfast_given', False)])
+    total_breakfast = breakfast_count * settings.get('breakfast_amount', 100.0)
+    
     total_expenses = sum([e['amount'] for e in expenses])
     total_bonuses = sum([b['amount'] for b in bonuses])
     
@@ -767,7 +770,7 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
     
     # Net pay calculation
     net_pay = (driver['base_salary'] + total_overtime_amount + total_conveyance + 
-               total_dinner + total_expenses + total_bonuses - total_advances - 
+               total_dinner + total_breakfast + total_expenses + total_bonuses - total_advances - 
                leave_deductions - other_deductions)
     
     return PayrollResponse(
@@ -779,6 +782,7 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
         total_overtime_amount=round(total_overtime_amount, 2),
         total_conveyance=round(total_conveyance, 2),
         total_dinner=round(total_dinner, 2),
+        total_breakfast=round(total_breakfast, 2),
         total_expenses=round(total_expenses, 2),
         total_bonuses=round(total_bonuses, 2),
         total_advances=round(total_advances, 2),
