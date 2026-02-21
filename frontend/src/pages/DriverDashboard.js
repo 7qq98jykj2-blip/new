@@ -23,9 +23,13 @@ export default function DriverDashboard({ user, onLogout }) {
   const fetchDriverProfile = async () => {
     try {
       const response = await api.get('/drivers');
-      // Find driver by user's phone or first driver for demo
-      const driver = response.data[0]; // Simplified for demo
-      setDriverProfile(driver);
+      // Find driver by matching phone number with user's mobile
+      const driver = response.data.find(d => d.phone === user.mobile) || response.data[0];
+      if (driver) {
+        setDriverProfile(driver);
+      } else {
+        toast.error('Driver profile not found. Please contact admin.');
+      }
     } catch (error) {
       toast.error('Failed to fetch driver profile');
     }
