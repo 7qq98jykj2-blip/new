@@ -11,8 +11,16 @@ import { ArrowLeft, Save } from 'lucide-react';
 export default function Settings({ user, onLogout }) {
   const [settings, setSettings] = useState({
     overtime_per_15min: 25,
-    food_allowance_amount: 100,
-    food_trigger_hours_after_standard: 2,
+    conveyance_amount: 75,
+    dinner_amount: 200,
+    breakfast_amount: 100,
+    conveyance_trigger_before_time: '08:00',
+    conveyance_trigger_after_time: '23:30',
+    dinner_trigger_after_time: '23:00',
+    breakfast_trigger_before_time: '07:30',
+    grace_period_minutes: 15,
+    working_days_per_week: 6,
+    days_in_month: 30,
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
