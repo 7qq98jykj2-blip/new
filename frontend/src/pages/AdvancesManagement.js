@@ -194,7 +194,7 @@ export default function AdvancesManagement({ user, onLogout }) {
                     size="sm"
                     className="w-full mt-4"
                   >
-                    <DollarSign className="w-4 h-4 mr-1" />
+                    <IndianRupee className="w-4 h-4 mr-1" />
                     Settle Amount
                   </Button>
                 )}
