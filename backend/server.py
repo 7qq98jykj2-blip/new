@@ -787,6 +787,10 @@ async def get_dashboard_stats(user: dict = Depends(get_admin_user)):
 
 app.include_router(api_router)
 
+# Include new feature routes
+from routes_new_features import router as new_features_router
+app.include_router(new_features_router, prefix="/api")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
