@@ -197,6 +197,51 @@ export default function AdminDashboard({ user, onLogout }) {
               </Button>
 
               <Button
+                data-testid="nav-approvals-button"
+                onClick={() => navigate('/duty-approvals')}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-zinc-50 hover:border-zinc-300 relative"
+              >
+                {pendingApprovals > 0 && (
+                  <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                    {pendingApprovals}
+                  </span>
+                )}
+                <FileText className="w-6 h-6" />
+                <span className="text-sm font-medium">Approvals</span>
+              </Button>
+
+              <Button
+                data-testid="nav-advances-button"
+                onClick={() => navigate('/advances')}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-zinc-50 hover:border-zinc-300"
+              >
+                <DollarSign className="w-6 h-6" />
+                <span className="text-sm font-medium">Advances</span>
+              </Button>
+
+              <Button
+                data-testid="nav-bonuses-button"
+                onClick={() => navigate('/bonuses')}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-zinc-50 hover:border-zinc-300"
+              >
+                <FileText className="w-6 h-6" />
+                <span className="text-sm font-medium">Bonuses</span>
+              </Button>
+
+              <Button
+                data-testid="nav-leaves-button"
+                onClick={() => navigate('/leaves')}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-zinc-50 hover:border-zinc-300"
+              >
+                <Calendar className="w-6 h-6" />
+                <span className="text-sm font-medium">Leaves</span>
+              </Button>
+
+              <Button
                 data-testid="nav-settings-button"
                 onClick={() => navigate('/settings')}
                 variant="outline"
