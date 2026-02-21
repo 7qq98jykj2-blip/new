@@ -94,7 +94,7 @@ export default function AdminDashboard({ user, onLogout }) {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-zinc-600">Current Month Payroll</CardTitle>
-                <DollarSign className="w-5 h-5 text-zinc-400" />
+                <IndianRupee className="w-5 h-5 text-zinc-400" />
               </div>
             </CardHeader>
             <CardContent>
