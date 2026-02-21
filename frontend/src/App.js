@@ -8,6 +8,10 @@ import DutyRecords from './pages/DutyRecords';
 import ExpenseManagement from './pages/ExpenseManagement';
 import PayrollView from './pages/PayrollView';
 import Settings from './pages/Settings';
+import DutyApproval from './pages/DutyApproval';
+import AdvancesManagement from './pages/AdvancesManagement';
+import BonusesManagement from './pages/BonusesManagement';
+import LeaveManagement from './pages/LeaveManagement';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
