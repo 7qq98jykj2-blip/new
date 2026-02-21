@@ -119,6 +119,46 @@ export default function AdminDashboard({ user, onLogout }) {
           </Card>
         </div>
 
+        {/* Alerts */}
+        {(expiringLicenses.length > 0 || pendingApprovals > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {pendingApprovals > 0 && (
+              <Card className="border-orange-200 bg-orange-50 shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-orange-900">Pending Duty Approvals</p>
+                      <p className="text-2xl font-semibold text-orange-950 mt-1">{pendingApprovals}</p>
+                    </div>
+                    <Button onClick={() => navigate('/duty-approvals')} size="sm">
+                      Review
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {expiringLicenses.length > 0 && (
+              <Card className="border-red-200 bg-red-50 shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-red-900">Licenses Expiring Soon</p>
+                      <p className="text-2xl font-semibold text-red-950 mt-1">{expiringLicenses.length}</p>
+                      <p className="text-xs text-red-700 mt-1">
+                        {expiringLicenses[0]?.full_name} - {expiringLicenses[0]?.days_until_expiry} days
+                      </p>
+                    </div>
+                    <Button onClick={() => navigate('/drivers')} size="sm">
+                      View
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* Quick Actions */}
         <Card className="border-zinc-200 shadow-sm">
           <CardHeader>
