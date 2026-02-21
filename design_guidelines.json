@@ -1,0 +1,118 @@
+{
+  "project_name": "Driver Duty & Payroll Management App",
+  "theme": "Minimal Monochrome (Light Mode Only)",
+  "emotional_tone": "Professional, Trustworthy, Clear, Efficient",
+  "typography": {
+    "font_family": {
+      "heading": "Inter, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-3xl font-semibold tracking-tight",
+      "h2": "text-2xl font-medium tracking-tight",
+      "h3": "text-xl font-medium",
+      "body": "text-base font-normal leading-relaxed",
+      "small": "text-sm text-muted-foreground",
+      "tiny": "text-xs font-medium uppercase tracking-wider text-muted-foreground"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": "#18181b",
+      "primary_foreground": "#fafafa",
+      "secondary": "#f4f4f5",
+      "secondary_foreground": "#18181b",
+      "muted": "#f4f4f5",
+      "muted_foreground": "#71717a",
+      "accent": "#f4f4f5",
+      "accent_foreground": "#18181b",
+      "background": "#ffffff",
+      "foreground": "#09090b",
+      "border": "#e4e4e7",
+      "input": "#e4e4e7",
+      "ring": "#18181b",
+      "success": "#16a34a",
+      "warning": "#f59e0b",
+      "error": "#ef4444"
+    },
+    "usage_rules": {
+      "gradients": "FORBIDDEN. Use solid colors only.",
+      "backgrounds": "White (#ffffff) or Zinc-50 (#fafafa) for page backgrounds. Zinc-100 (#f4f4f5) for cards/secondary areas.",
+      "text": "Zinc-950 for headings. Zinc-600 for body text. Zinc-400 for placeholders."
+    }
+  },
+  "layout": {
+    "spacing_scale": "p-4, p-6, p-8, p-12",
+    "border_radius": "rounded-md (6px) or rounded-lg (8px)",
+    "container_width": "max-w-md (mobile), max-w-5xl (admin dashboard)",
+    "grid_strategy": {
+      "mobile": "grid-cols-1 gap-4",
+      "tablet": "grid-cols-2 gap-6",
+      "desktop": "grid-cols-4 gap-6"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-12 rounded-md font-medium transition-colors",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 h-12 rounded-md font-medium transition-colors",
+      "destructive": "bg-destructive text-destructive-foreground hover:bg-destructive/90 h-12 rounded-md font-medium transition-colors",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground h-12 rounded-md font-medium transition-colors"
+    },
+    "cards": {
+      "style": "bg-card text-card-foreground border border-border shadow-sm rounded-lg p-6",
+      "hover": "hover:border-zinc-300 transition-colors"
+    },
+    "inputs": {
+      "style": "h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    },
+    "tables": {
+      "style": "w-full caption-bottom text-sm",
+      "header": "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "row": "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "cell": "p-4 align-middle [&:has([role=checkbox])]:pr-0"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": "shadow-sm (minimal) or none",
+    "borders": "1px solid #e4e4e7 (Zinc-200)",
+    "icons": "Lucide React (stroke-width=1.5 or 2)",
+    "motion": "transition-all duration-100 ease-out (snappy, no bounce)"
+  },
+  "image_urls": {
+    "login_background": "https://images.unsplash.com/photo-1601467995997-ac1ae9a8fff4",
+    "driver_avatar_placeholder": "https://images.pexels.com/photos/14797994/pexels-photo-14797994.jpeg"
+  },
+  "instructions_to_main_agent": {
+    "general": [
+      "Keep the UI strict monochrome. No blue/purple/green primary colors. Use Zinc/Slate scales.",
+      "Focus on high contrast for readability in outdoor environments.",
+      "Mobile-first: Ensure all buttons are at least 44px height for touch targets.",
+      "Use 'data-testid' on all interactive elements for testing.",
+      "Avoid complex gradients or glassmorphism. Stick to solid backgrounds and borders."
+    ],
+    "specific_pages": {
+      "login": "Simple centered card with mobile number input. Background image: login_background (with overlay if needed).",
+      "admin_dashboard": "Grid of summary cards (Active Drivers, Total Payroll). List of pending actions.",
+      "driver_dashboard": "Big 'Start Duty' / 'Stop Duty' button. prominent clock. Recent history list.",
+      "payroll_slip": "Clean, table-based layout. Monospace font for numbers/amounts."
+    }
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations - hover states, transitions. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use sonner for toasts"
+  ]
+}
