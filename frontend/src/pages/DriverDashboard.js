@@ -63,6 +63,7 @@ export default function DriverDashboard({ user, onLogout }) {
       toast.success('Duty entry submitted successfully');
       setInTime('');
       setOutTime('');
+      setSelectedDate(new Date().toISOString().split('T')[0]);
       fetchRecentEntries();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit duty entry');
