@@ -468,6 +468,7 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
             'conveyance_trigger_after_time': '23:30',
             'dinner_trigger_after_time': '23:00',
             'breakfast_trigger_before_time': '07:30',
+            'grace_period_minutes': 15,
             'working_days_per_week': 6,
             'days_in_month': 30
         }
@@ -651,6 +652,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
             'conveyance_trigger_after_time': '23:30',
             'dinner_trigger_after_time': '23:00',
             'breakfast_trigger_before_time': '07:30',
+            'grace_period_minutes': 15,
             'working_days_per_week': 6,
             'days_in_month': 30
         }
@@ -706,6 +708,7 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
             'conveyance_trigger_after_time': '23:30',
             'dinner_trigger_after_time': '23:00',
             'breakfast_trigger_before_time': '07:30',
+            'grace_period_minutes': 15,
             'working_days_per_week': 6,
             'days_in_month': 30
         }
