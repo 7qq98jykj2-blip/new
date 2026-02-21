@@ -626,38 +626,81 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
     if not settings:
         settings = {
             'overtime_per_15min': 25.0,
-            'food_allowance_amount': 100.0,
-            'food_trigger_hours_after_standard': 2.0
+            'conveyance_amount': 75.0,
+            'dinner_amount': 200.0,
+            'conveyance_trigger_hours_after_standard': 2.0,
+            'dinner_trigger_time': '23:30',
+            'working_days_per_week': 6,
+            'days_in_month': 30
         }
     
-    # Get duty entries for the month
+    # Get duty entries for the month (only approved ones)
     start_date = f"{year}-{month:02d}-01"
     last_day = monthrange(year, month)[1]
     end_date = f"{year}-{month:02d}-{last_day}"
     
     duty_entries = await db.duty_entries.find({
         'driver_id': driver_id,
-        'date': {'$gte': start_date, '$lte': end_date}
+        'date': {'$gte': start_date, '$lte': end_date},
+        'approval_status': 'approved'
     }, {'_id': 0}).to_list(1000)
     
-    # Get expenses for the month
+    # Get expenses
     expenses = await db.expenses.find({
         'driver_id': driver_id,
         'date': {'$gte': start_date, '$lte': end_date}
     }, {'_id': 0}).to_list(1000)
     
+    # Get bonuses
+    bonuses = await db.bonuses.find({
+        'driver_id': driver_id,
+        'date': {'$gte': start_date, '$lte': end_date}
+    }, {'_id': 0}).to_list(1000)
+    
+    # Get advances (unsettled)
+    advances = await db.advances.find({
+        'driver_id': driver_id
+    }, {'_id': 0}).to_list(1000)
+    
+    # Get leaves
+    leaves = await db.leaves.find({
+        'driver_id': driver_id,
+        'date': {'$gte': start_date, '$lte': end_date}
+    }, {'_id': 0}).to_list(1000)
+    
+    # Get payment proof
+    payment_proof = await db.payment_proofs.find_one({
+        'driver_id': driver_id,
+        'year': year,
+        'month': month
+    }, {'_id': 0})
+    
     # Calculate totals
     total_overtime_minutes = sum([e['overtime_minutes'] for e in duty_entries])
     total_overtime_amount = (total_overtime_minutes / 15) * settings['overtime_per_15min']
     
-    food_allowances_count = sum([1 for e in duty_entries if e['food_allowance_given']])
-    total_food_allowances = food_allowances_count * settings['food_allowance_amount']
+    conveyance_count = sum([1 for e in duty_entries if e.get('conveyance_given', False)])
+    total_conveyance = conveyance_count * settings['conveyance_amount']
+    
+    dinner_count = sum([1 for e in duty_entries if e.get('dinner_given', False)])
+    total_dinner = dinner_count * settings['dinner_amount']
     
     total_expenses = sum([e['amount'] for e in expenses])
+    total_bonuses = sum([b['amount'] for b in bonuses])
     
-    deductions = 0  # Can be extended later
+    # Calculate unsettled advances
+    total_advances = sum([a['amount'] - a['settled_amount'] for a in advances if a['amount'] > a['settled_amount']])
     
-    net_pay = driver['base_salary'] + total_overtime_amount + total_food_allowances + total_expenses - deductions
+    # Calculate leave deductions
+    leave_deductions = sum([l['deduction_amount'] for l in leaves])
+    
+    # Other deductions (can be extended)
+    other_deductions = 0
+    
+    # Net pay calculation
+    net_pay = (driver['base_salary'] + total_overtime_amount + total_conveyance + 
+               total_dinner + total_expenses + total_bonuses - total_advances - 
+               leave_deductions - other_deductions)
     
     return PayrollResponse(
         driver_id=driver_id,
@@ -666,22 +709,46 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
         year=year,
         base_salary=driver['base_salary'],
         total_overtime_amount=round(total_overtime_amount, 2),
-        total_food_allowances=round(total_food_allowances, 2),
+        total_conveyance=round(total_conveyance, 2),
+        total_dinner=round(total_dinner, 2),
         total_expenses=round(total_expenses, 2),
-        deductions=deductions,
+        total_bonuses=round(total_bonuses, 2),
+        total_advances=round(total_advances, 2),
+        leave_deductions=round(leave_deductions, 2),
+        deductions=round(other_deductions, 2),
         net_pay=round(net_pay, 2),
         duty_entries=[{
             'date': e['date'],
             'hours_worked': e['hours_worked'],
             'overtime_minutes': e['overtime_minutes'],
-            'food_allowance_given': e['food_allowance_given']
+            'conveyance_given': e.get('conveyance_given', False),
+            'dinner_given': e.get('dinner_given', False),
+            'approval_status': e.get('approval_status', 'pending')
         } for e in duty_entries],
         expenses=[{
             'date': e['date'],
             'amount': e['amount'],
             'description': e['description'],
             'category': e['category']
-        } for e in expenses]
+        } for e in expenses],
+        bonuses=[{
+            'date': b['date'],
+            'amount': b['amount'],
+            'bonus_type': b['bonus_type'],
+            'reason': b['reason']
+        } for b in bonuses],
+        advances=[{
+            'date': a['date'],
+            'amount': a['amount'],
+            'settled_amount': a['settled_amount'],
+            'reason': a['reason']
+        } for a in advances if a['amount'] > a['settled_amount']],
+        leaves=[{
+            'date': l['date'],
+            'reason': l['reason'],
+            'deduction_amount': l['deduction_amount']
+        } for l in leaves],
+        payment_proof_url=payment_proof['screenshot_url'] if payment_proof else None
     )
 
 # ============ DASHBOARD STATS ============
