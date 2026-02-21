@@ -308,12 +308,18 @@ def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: 
     duration = out_time - in_time
     hours_worked = duration.total_seconds() / 3600
     
-    # Calculate overtime in minutes
+    # Calculate overtime in minutes with grace period
     overtime_hours = max(0, hours_worked - standard_hours)
     overtime_minutes_exact = overtime_hours * 60
     
-    # Round up to nearest 15 minutes
-    overtime_minutes = int((overtime_minutes_exact + 14) // 15) * 15
+    # Apply grace period - only count overtime if it exceeds grace period
+    grace_period = settings.get('grace_period_minutes', 0)
+    if overtime_minutes_exact > grace_period:
+        overtime_minutes_after_grace = overtime_minutes_exact - grace_period
+        # Round up to nearest 15 minutes
+        overtime_minutes = int((overtime_minutes_after_grace + 14) // 15) * 15
+    else:
+        overtime_minutes = 0
     
     # Breakfast: triggered if in_time is before breakfast_trigger_before_time (e.g., 07:30)
     breakfast_trigger_parts = settings.get('breakfast_trigger_before_time', '07:30').split(':')
