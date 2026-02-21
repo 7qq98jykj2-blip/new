@@ -67,18 +67,19 @@ export default function BonusesManagement({ user, onLogout }) {
       driver_id: drivers[0]?.id || '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
-      bonus_type: 'monthly',
+      bonus_type: 'all',
       reason: '',
     });
   };
 
   const getBonusTypeColor = (type) => {
     const colors = {
+      all: 'bg-zinc-100 text-zinc-700',
       yearly: 'bg-purple-100 text-purple-700',
       monthly: 'bg-blue-100 text-blue-700',
       incentive: 'bg-green-100 text-green-700'
     };
-    return colors[type] || colors.monthly;
+    return colors[type] || colors.all;
   };
 
   return (
