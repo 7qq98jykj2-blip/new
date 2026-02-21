@@ -127,6 +127,7 @@ export default function BonusesManagement({ user, onLogout }) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
                         <SelectItem value="monthly">Monthly</SelectItem>
                         <SelectItem value="yearly">Yearly/Seasonal</SelectItem>
                         <SelectItem value="incentive">Incentive</SelectItem>
@@ -134,15 +135,16 @@ export default function BonusesManagement({ user, onLogout }) {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="date">Date</Label>
+                    <Label htmlFor="date">Month</Label>
                     <Input
                       id="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      type="month"
+                      value={formData.date.substring(0, 7)}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value + '-01' })}
                       required
                       className="h-12"
                     />
+                    <p className="text-xs text-zinc-500">Bonus is for the entire month</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="amount">Amount (₹)</Label>
