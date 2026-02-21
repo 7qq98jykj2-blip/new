@@ -133,6 +133,7 @@ class DutyEntryResponse(BaseModel):
     overtime_minutes: int
     conveyance_given: bool
     dinner_given: bool
+    breakfast_given: bool
     approval_status: str  # pending, approved, rejected
     created_at: str
 
