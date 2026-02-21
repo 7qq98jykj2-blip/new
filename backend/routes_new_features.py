@@ -338,3 +338,61 @@ async def get_pending_duty_entries():
         entry['driver_name'] = driver_map.get(entry['driver_id'])
     
     return entries
+
+# ============ LICENSE EXPIRY CHECK ============
+
+@router.get('/drivers/expiring-licenses')
+async def get_drivers_with_expiring_licenses():
+    """Get drivers whose licenses expire within 2 months"""
+    from datetime import datetime, timedelta
+    
+    drivers = await db.drivers.find({}, {'_id': 0}).to_list(1000)
+    expiring_drivers = []
+    
+    today = datetime.now().date()
+    two_months_later = today + timedelta(days=60)
+    
+    for driver in drivers:
+        if driver.get('license_expiry_date'):
+            try:
+                expiry_date = datetime.fromisoformat(driver['license_expiry_date']).date()
+                if today <= expiry_date <= two_months_later:
+                    driver['license_expiring_soon'] = True
+                    driver['days_until_expiry'] = (expiry_date - today).days
+                    expiring_drivers.append(driver)
+            except:
+                pass
+    
+    return expiring_drivers
+
+# ============ UPI PAYMENT REQUEST ============
+
+class UPIPaymentRequest(BaseModel):
+    driver_id: str
+    amount: float
+    note: str
+
+@router.post('/payment-request/upi')
+async def generate_upi_payment_request(payment_req: UPIPaymentRequest):
+    """Generate UPI payment link for driver"""
+    driver = await db.drivers.find_one({'id': payment_req.driver_id}, {'_id': 0})
+    if not driver:
+        raise HTTPException(status_code=404, detail='Driver not found')
+    
+    if not driver.get('upi_id'):
+        raise HTTPException(status_code=400, detail='Driver UPI ID not configured')
+    
+    # Generate UPI deep link
+    upi_id = driver['upi_id']
+    amount = payment_req.amount
+    note = payment_req.note.replace(' ', '%20')
+    
+    upi_link = f"upi://pay?pa={upi_id}&am={amount}&tn={note}&cu=INR"
+    
+    return {
+        'upi_link': upi_link,
+        'upi_id': upi_id,
+        'amount': amount,
+        'note': payment_req.note,
+        'driver_name': driver['full_name']
+    }
