@@ -251,6 +251,7 @@ class PayrollResponse(BaseModel):
     total_overtime_amount: float
     total_conveyance: float
     total_dinner: float
+    total_breakfast: float
     total_expenses: float
     total_bonuses: float
     total_advances: float
