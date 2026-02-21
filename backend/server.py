@@ -795,6 +795,7 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
             'overtime_minutes': e['overtime_minutes'],
             'conveyance_given': e.get('conveyance_given', False),
             'dinner_given': e.get('dinner_given', False),
+            'breakfast_given': e.get('breakfast_given', False),
             'approval_status': e.get('approval_status', 'pending')
         } for e in duty_entries],
         expenses=[{
