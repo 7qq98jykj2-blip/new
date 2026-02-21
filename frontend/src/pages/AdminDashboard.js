@@ -8,11 +8,15 @@ import { Users, DollarSign, Calendar, LogOut, Settings as SettingsIcon, FileText
 
 export default function AdminDashboard({ user, onLogout }) {
   const [stats, setStats] = useState(null);
+  const [expiringLicenses, setExpiringLicenses] = useState([]);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchStats();
+    fetchExpiringLicenses();
+    fetchPendingApprovals();
   }, []);
 
   const fetchStats = async () => {
@@ -23,6 +27,24 @@ export default function AdminDashboard({ user, onLogout }) {
       toast.error('Failed to fetch dashboard stats');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExpiringLicenses = async () => {
+    try {
+      const response = await api.get('/drivers/expiring-licenses');
+      setExpiringLicenses(response.data);
+    } catch (error) {
+      console.error('Failed to fetch expiring licenses');
+    }
+  };
+
+  const fetchPendingApprovals = async () => {
+    try {
+      const response = await api.get('/duty-entries/pending');
+      setPendingApprovals(response.data.length);
+    } catch (error) {
+      console.error('Failed to fetch pending approvals');
     }
   };
 
