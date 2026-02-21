@@ -455,8 +455,11 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
             'overtime_per_15min': 25.0,
             'conveyance_amount': 75.0,
             'dinner_amount': 200.0,
-            'conveyance_trigger_hours_after_standard': 2.0,
-            'dinner_trigger_time': '23:30',
+            'breakfast_amount': 100.0,
+            'conveyance_trigger_before_time': '08:00',
+            'conveyance_trigger_after_time': '23:30',
+            'dinner_trigger_after_time': '23:00',
+            'breakfast_trigger_before_time': '07:30',
             'working_days_per_week': 6,
             'days_in_month': 30
         }
