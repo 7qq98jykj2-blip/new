@@ -842,20 +842,94 @@ async def get_dashboard_stats(user: dict = Depends(get_admin_user)):
     # Count active drivers
     total_drivers = await db.drivers.count_documents({})
     
-    # Get current month payroll estimate
+    # Get current month info
     now = datetime.now()
     current_month = now.month
     current_year = now.year
     
-    drivers = await db.drivers.find({}, {'_id': 0}).to_list(1000)
-    total_payroll = 0
+    # Optimize: Batch fetch all data for current month instead of per-driver queries
+    start_date = f"{current_year}-{current_month:02d}-01"
+    last_day = monthrange(current_year, current_month)[1]
+    end_date = f"{current_year}-{current_month:02d}-{last_day}"
     
+    # Fetch all drivers and their data in parallel
+    drivers = await db.drivers.find({}, {'_id': 0, 'id': 1, 'base_salary': 1}).to_list(1000)
+    
+    # Batch fetch all month data
+    all_duty_entries = await db.duty_entries.find({
+        'date': {'$gte': start_date, '$lte': end_date},
+        'approval_status': 'approved'
+    }, {'_id': 0}).to_list(10000)
+    
+    all_expenses = await db.expenses.find({
+        'date': {'$gte': start_date, '$lte': end_date}
+    }, {'_id': 0}).to_list(10000)
+    
+    all_bonuses = await db.bonuses.find({
+        'date': {'$gte': start_date, '$lte': end_date}
+    }, {'_id': 0}).to_list(10000)
+    
+    all_advances = await db.advances.find({}, {'_id': 0}).to_list(10000)
+    
+    all_leaves = await db.leaves.find({
+        'date': {'$gte': start_date, '$lte': end_date}
+    }, {'_id': 0}).to_list(10000)
+    
+    # Get settings once
+    settings = await db.settings.find_one({}, {'_id': 0}) or {
+        'overtime_per_15min': 25.0,
+        'conveyance_amount': 75.0,
+        'dinner_amount': 200.0,
+        'breakfast_amount': 100.0
+    }
+    
+    # Group data by driver_id in memory
+    from collections import defaultdict
+    duty_by_driver = defaultdict(list)
+    expenses_by_driver = defaultdict(list)
+    bonuses_by_driver = defaultdict(list)
+    advances_by_driver = defaultdict(list)
+    leaves_by_driver = defaultdict(list)
+    
+    for entry in all_duty_entries:
+        duty_by_driver[entry['driver_id']].append(entry)
+    for expense in all_expenses:
+        expenses_by_driver[expense['driver_id']].append(expense)
+    for bonus in all_bonuses:
+        bonuses_by_driver[bonus['driver_id']].append(bonus)
+    for advance in all_advances:
+        advances_by_driver[advance['driver_id']].append(advance)
+    for leave in all_leaves:
+        leaves_by_driver[leave['driver_id']].append(leave)
+    
+    # Calculate total payroll
+    total_payroll = 0
     for driver in drivers:
-        try:
-            payroll = await calculate_payroll(driver['id'], current_year, current_month, user)
-            total_payroll += payroll.net_pay
-        except:
-            pass
+        driver_id = driver['id']
+        base_salary = driver['base_salary']
+        
+        # Calculate driver payroll from grouped data
+        duty_entries = duty_by_driver[driver_id]
+        expenses = expenses_by_driver[driver_id]
+        bonuses = bonuses_by_driver[driver_id]
+        advances = [a for a in advances_by_driver[driver_id] if a['amount'] > a['settled_amount']]
+        leaves = leaves_by_driver[driver_id]
+        
+        # Calculate components
+        total_overtime = sum((e['overtime_minutes'] / 15) * settings['overtime_per_15min'] for e in duty_entries)
+        total_conveyance = sum(settings['conveyance_amount'] for e in duty_entries if e.get('conveyance_given'))
+        total_dinner = sum(settings['dinner_amount'] for e in duty_entries if e.get('dinner_given'))
+        total_breakfast = sum(settings.get('breakfast_amount', 100.0) for e in duty_entries if e.get('breakfast_given'))
+        total_expenses_amt = sum(e['amount'] for e in expenses)
+        total_bonuses_amt = sum(b['amount'] for b in bonuses)
+        total_advances_amt = sum(a['amount'] - a['settled_amount'] for a in advances)
+        total_leaves_deduction = sum(l['deduction_amount'] for l in leaves)
+        
+        net_pay = (base_salary + total_overtime + total_conveyance + total_dinner + 
+                   total_breakfast + total_expenses_amt + total_bonuses_amt - 
+                   total_advances_amt - total_leaves_deduction)
+        
+        total_payroll += net_pay
     
     # Count today's entries
     today = now.strftime('%Y-%m-%d')
