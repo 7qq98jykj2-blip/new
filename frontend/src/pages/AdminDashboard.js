@@ -217,7 +217,7 @@ export default function AdminDashboard({ user, onLogout }) {
                 variant="outline"
                 className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-zinc-50 hover:border-zinc-300"
               >
-                <DollarSign className="w-6 h-6" />
+                <IndianRupee className="w-6 h-6" />
                 <span className="text-sm font-medium">Advances</span>
               </Button>
 
