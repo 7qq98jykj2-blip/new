@@ -80,6 +80,22 @@ function App() {
             path="/settings"
             element={user && user.role === 'admin' ? <Settings user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
           />
+          <Route
+            path="/duty-approvals"
+            element={user && user.role === 'admin' ? <DutyApproval user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/advances"
+            element={user && user.role === 'admin' ? <AdvancesManagement user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/bonuses"
+            element={user && user.role === 'admin' ? <BonusesManagement user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/leaves"
+            element={user && user.role === 'admin' ? <LeaveManagement user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          />
           <Route path="/" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/driver') : '/login'} />} />
         </Routes>
       </BrowserRouter>
