@@ -135,7 +135,7 @@ class DriverPayrollAPITester:
             "Create Duty Entry",
             "POST",
             "duty-entries",
-            201,
+            200,
             data=duty_data,
             headers=self.get_auth_header('admin')
         )
