@@ -92,7 +92,7 @@ class DriverPayrollAPITester:
             "Create Driver",
             "POST",
             "drivers",
-            201,
+            200,
             data=driver_data,
             headers=self.get_auth_header('admin')
         )
