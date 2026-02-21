@@ -188,13 +188,21 @@ class ExpenseResponse(BaseModel):
 
 class SettingsResponse(BaseModel):
     overtime_per_15min: float
-    food_allowance_amount: float
-    food_trigger_hours_after_standard: float
+    conveyance_amount: float
+    dinner_amount: float
+    conveyance_trigger_hours_after_standard: float
+    dinner_trigger_time: str  # e.g., "23:30"
+    working_days_per_week: int
+    days_in_month: int
 
 class SettingsUpdate(BaseModel):
     overtime_per_15min: Optional[float] = None
-    food_allowance_amount: Optional[float] = None
-    food_trigger_hours_after_standard: Optional[float] = None
+    conveyance_amount: Optional[float] = None
+    dinner_amount: Optional[float] = None
+    conveyance_trigger_hours_after_standard: Optional[float] = None
+    dinner_trigger_time: Optional[str] = None
+    working_days_per_week: Optional[int] = None
+    days_in_month: Optional[int] = None
 
 class PayrollResponse(BaseModel):
     driver_id: str
