@@ -221,8 +221,11 @@ class SettingsResponse(BaseModel):
     overtime_per_15min: float
     conveyance_amount: float
     dinner_amount: float
-    conveyance_trigger_hours_after_standard: float
-    dinner_trigger_time: str  # e.g., "23:30"
+    breakfast_amount: float
+    conveyance_trigger_before_time: str  # e.g., "08:00"
+    conveyance_trigger_after_time: str  # e.g., "23:30"
+    dinner_trigger_after_time: str  # e.g., "23:00"
+    breakfast_trigger_before_time: str  # e.g., "07:30"
     working_days_per_week: int
     days_in_month: int
 
@@ -230,8 +233,11 @@ class SettingsUpdate(BaseModel):
     overtime_per_15min: Optional[float] = None
     conveyance_amount: Optional[float] = None
     dinner_amount: Optional[float] = None
-    conveyance_trigger_hours_after_standard: Optional[float] = None
-    dinner_trigger_time: Optional[str] = None
+    breakfast_amount: Optional[float] = None
+    conveyance_trigger_before_time: Optional[str] = None
+    conveyance_trigger_after_time: Optional[str] = None
+    dinner_trigger_after_time: Optional[str] = None
+    breakfast_trigger_before_time: Optional[str] = None
     working_days_per_week: Optional[int] = None
     days_in_month: Optional[int] = None
 
