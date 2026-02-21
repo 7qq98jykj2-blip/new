@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
-import { Users, DollarSign, Calendar, LogOut, Settings as SettingsIcon, FileText, Wallet } from 'lucide-react';
+import { Users, IndianRupee, Calendar, LogOut, Settings as SettingsIcon, FileText, Wallet } from 'lucide-react';
 
 export default function AdminDashboard({ user, onLogout }) {
   const [stats, setStats] = useState(null);
