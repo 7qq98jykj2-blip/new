@@ -100,7 +100,73 @@ class DutyEntryResponse(BaseModel):
     out_time: str
     hours_worked: float
     overtime_minutes: int
-    food_allowance_given: bool
+    conveyance_given: bool
+    dinner_given: bool
+    approval_status: str  # pending, approved, rejected
+    created_at: str
+
+class DutyApprovalUpdate(BaseModel):
+    approval_status: str  # approved or rejected
+
+class AdvanceCreate(BaseModel):
+    driver_id: str
+    amount: float
+    date: str
+    reason: str
+
+class AdvanceResponse(BaseModel):
+    id: str
+    driver_id: str
+    driver_name: Optional[str] = None
+    amount: float
+    settled_amount: float
+    date: str
+    reason: str
+    created_at: str
+
+class BonusCreate(BaseModel):
+    driver_id: str
+    amount: float
+    date: str
+    bonus_type: str  # yearly, monthly, incentive
+    reason: str
+
+class BonusResponse(BaseModel):
+    id: str
+    driver_id: str
+    driver_name: Optional[str] = None
+    amount: float
+    date: str
+    bonus_type: str
+    reason: str
+    created_at: str
+
+class PaymentProofCreate(BaseModel):
+    driver_id: str
+    month: int
+    year: int
+    screenshot_url: str
+
+class PaymentProofResponse(BaseModel):
+    id: str
+    driver_id: str
+    month: int
+    year: int
+    screenshot_url: str
+    upload_date: str
+
+class LeaveRecordCreate(BaseModel):
+    driver_id: str
+    date: str
+    reason: str
+
+class LeaveRecordResponse(BaseModel):
+    id: str
+    driver_id: str
+    driver_name: Optional[str] = None
+    date: str
+    reason: str
+    deduction_amount: float
     created_at: str
 
 class ExpenseCreate(BaseModel):
