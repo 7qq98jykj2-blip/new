@@ -211,12 +211,20 @@ class PayrollResponse(BaseModel):
     year: int
     base_salary: float
     total_overtime_amount: float
-    total_food_allowances: float
+    total_conveyance: float
+    total_dinner: float
     total_expenses: float
+    total_bonuses: float
+    total_advances: float
+    leave_deductions: float
     deductions: float
     net_pay: float
     duty_entries: List[dict]
     expenses: List[dict]
+    bonuses: List[dict]
+    advances: List[dict]
+    leaves: List[dict]
+    payment_proof_url: Optional[str] = None
 
 # ============ AUTH HELPERS ============
 
