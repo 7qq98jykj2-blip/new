@@ -77,58 +77,163 @@ export default function Settings({ user, onLogout }) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="overtime_per_15min" data-testid="overtime-rate-label">
-                  Overtime Rate per 15 Minutes (₹)
-                </Label>
-                <Input
-                  id="overtime_per_15min"
-                  data-testid="overtime-rate-input"
-                  type="number"
-                  step="0.01"
-                  value={settings.overtime_per_15min}
-                  onChange={(e) => setSettings({ ...settings, overtime_per_15min: parseFloat(e.target.value) })}
-                  required
-                  className="h-12"
-                />
-                <p className="text-xs text-zinc-500">Amount paid for every 15 minutes of overtime (rounded up)</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="overtime_per_15min">Overtime Rate per 15 Min (₹)</Label>
+                  <Input
+                    id="overtime_per_15min"
+                    type="number"
+                    step="0.01"
+                    value={settings.overtime_per_15min}
+                    onChange={(e) => setSettings({ ...settings, overtime_per_15min: parseFloat(e.target.value) })}
+                    required
+                    className="h-12"
+                  />
+                  <p className="text-xs text-zinc-500">Amount per 15 minutes (rounded up)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="grace_period_minutes">Grace Period (Minutes)</Label>
+                  <Input
+                    id="grace_period_minutes"
+                    type="number"
+                    value={settings.grace_period_minutes}
+                    onChange={(e) => setSettings({ ...settings, grace_period_minutes: parseInt(e.target.value) })}
+                    required
+                    className="h-12"
+                  />
+                  <p className="text-xs text-zinc-500">Minutes to ignore before overtime calculation</p>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="food_allowance_amount" data-testid="food-allowance-label">
-                  Food Allowance Amount (₹)
-                </Label>
-                <Input
-                  id="food_allowance_amount"
-                  data-testid="food-allowance-input"
-                  type="number"
-                  step="0.01"
-                  value={settings.food_allowance_amount}
-                  onChange={(e) => setSettings({ ...settings, food_allowance_amount: parseFloat(e.target.value) })}
-                  required
-                  className="h-12"
-                />
-                <p className="text-xs text-zinc-500">Fixed amount provided as food allowance per eligible duty</p>
+              <div className="border-t border-zinc-200 pt-6">
+                <h3 className="text-lg font-medium mb-4">Allowances</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="breakfast_amount">Breakfast (₹)</Label>
+                    <Input
+                      id="breakfast_amount"
+                      type="number"
+                      step="0.01"
+                      value={settings.breakfast_amount}
+                      onChange={(e) => setSettings({ ...settings, breakfast_amount: parseFloat(e.target.value) })}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="conveyance_amount">Conveyance (₹)</Label>
+                    <Input
+                      id="conveyance_amount"
+                      type="number"
+                      step="0.01"
+                      value={settings.conveyance_amount}
+                      onChange={(e) => setSettings({ ...settings, conveyance_amount: parseFloat(e.target.value) })}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="dinner_amount">Dinner (₹)</Label>
+                    <Input
+                      id="dinner_amount"
+                      type="number"
+                      step="0.01"
+                      value={settings.dinner_amount}
+                      onChange={(e) => setSettings({ ...settings, dinner_amount: parseFloat(e.target.value) })}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="food_trigger_hours_after_standard" data-testid="food-trigger-label">
-                  Food Allowance Trigger (Hours After Standard Duty)
-                </Label>
-                <Input
-                  id="food_trigger_hours_after_standard"
-                  data-testid="food-trigger-input"
-                  type="number"
-                  step="0.5"
-                  value={settings.food_trigger_hours_after_standard}
-                  onChange={(e) => setSettings({ ...settings, food_trigger_hours_after_standard: parseFloat(e.target.value) })}
-                  required
-                  className="h-12"
-                />
-                <p className="text-xs text-zinc-500">
-                  Food allowance is given after working this many hours beyond standard duty hours<br />
-                  Example: If standard duty is 10h and trigger is 2h, food allowance applies after 12h total work
-                </p>
+              <div className="border-t border-zinc-200 pt-6">
+                <h3 className="text-lg font-medium mb-4">Allowance Triggers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="breakfast_trigger_before_time">Breakfast Before</Label>
+                    <Input
+                      id="breakfast_trigger_before_time"
+                      type="time"
+                      value={settings.breakfast_trigger_before_time}
+                      onChange={(e) => setSettings({ ...settings, breakfast_trigger_before_time: e.target.value })}
+                      required
+                      className="h-12"
+                    />
+                    <p className="text-xs text-zinc-500">Give breakfast if in-time before this</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="conveyance_trigger_before_time">Conveyance Before</Label>
+                    <Input
+                      id="conveyance_trigger_before_time"
+                      type="time"
+                      value={settings.conveyance_trigger_before_time}
+                      onChange={(e) => setSettings({ ...settings, conveyance_trigger_before_time: e.target.value })}
+                      required
+                      className="h-12"
+                    />
+                    <p className="text-xs text-zinc-500">Give conveyance if in-time before this</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="conveyance_trigger_after_time">Conveyance After</Label>
+                    <Input
+                      id="conveyance_trigger_after_time"
+                      type="time"
+                      value={settings.conveyance_trigger_after_time}
+                      onChange={(e) => setSettings({ ...settings, conveyance_trigger_after_time: e.target.value })}
+                      required
+                      className="h-12"
+                    />
+                    <p className="text-xs text-zinc-500">Give conveyance if out-time after this</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="dinner_trigger_after_time">Dinner After</Label>
+                    <Input
+                      id="dinner_trigger_after_time"
+                      type="time"
+                      value={settings.dinner_trigger_after_time}
+                      onChange={(e) => setSettings({ ...settings, dinner_trigger_after_time: e.target.value })}
+                      required
+                      className="h-12"
+                    />
+                    <p className="text-xs text-zinc-500">Give dinner if out-time after this</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-200 pt-6">
+                <h3 className="text-lg font-medium mb-4">Leave Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="working_days_per_week">Working Days per Week</Label>
+                    <Input
+                      id="working_days_per_week"
+                      type="number"
+                      value={settings.working_days_per_week}
+                      onChange={(e) => setSettings({ ...settings, working_days_per_week: parseInt(e.target.value) })}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="days_in_month">Days in Month (for calculation)</Label>
+                    <Input
+                      id="days_in_month"
+                      type="number"
+                      value={settings.days_in_month}
+                      onChange={(e) => setSettings({ ...settings, days_in_month: parseInt(e.target.value) })}
+                      required
+                      className="h-12"
+                    />
+                  </div>
+                </div>
               </div>
 
               <Button
