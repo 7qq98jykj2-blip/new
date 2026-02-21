@@ -47,7 +47,7 @@ export default function Login({ onLogin }) {
           <div className="w-12 h-12 bg-zinc-900 rounded-md flex items-center justify-center mb-3">
             <Truck className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">FleetPay</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">Taurani Staff</h1>
           <p className="text-sm text-zinc-600 mt-1">Driver Duty & Payroll Management</p>
         </div>
 
