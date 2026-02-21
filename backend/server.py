@@ -484,6 +484,7 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
         'overtime_minutes': details['overtime_minutes'],
         'conveyance_given': details['conveyance_given'],
         'dinner_given': details['dinner_given'],
+        'breakfast_given': details['breakfast_given'],
         'approval_status': 'pending',
         'created_at': datetime.now(timezone.utc).isoformat()
     }
