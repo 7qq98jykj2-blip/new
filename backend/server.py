@@ -563,7 +563,9 @@ async def update_duty_entry(entry_id: str, entry_data: DutyEntryUpdate, user: di
         'out_time': out_time,
         'hours_worked': details['hours_worked'],
         'overtime_minutes': details['overtime_minutes'],
-        'food_allowance_given': details['food_allowance_given']
+        'conveyance_given': details['conveyance_given'],
+        'dinner_given': details['dinner_given'],
+        'breakfast_given': details['breakfast_given']
     }
     
     await db.duty_entries.update_one({'id': entry_id}, {'$set': update_data})
