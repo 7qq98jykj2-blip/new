@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, DollarSign } from 'lucide-react';
+import { ArrowLeft, Plus, IndianRupee } from 'lucide-react';
 
 export default function AdvancesManagement({ user, onLogout }) {
   const [advances, setAdvances] = useState([]);
