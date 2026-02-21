@@ -59,6 +59,16 @@ class DriverCreate(BaseModel):
     job_start_date: str
     base_salary: float
     standard_hours: float
+    profile_photo_url: Optional[str] = None
+    license_number: Optional[str] = None
+    license_expiry_date: Optional[str] = None
+    license_photo_url: Optional[str] = None
+    kyc_documents_urls: Optional[List[str]] = []
+    emergency_contact: Optional[str] = None
+    blood_type: Optional[str] = None
+    can_drive_2wheeler: bool = False
+    can_drive_4wheeler: bool = False
+    upi_id: Optional[str] = None
 
 class DriverUpdate(BaseModel):
     full_name: Optional[str] = None
@@ -68,6 +78,16 @@ class DriverUpdate(BaseModel):
     job_start_date: Optional[str] = None
     base_salary: Optional[float] = None
     standard_hours: Optional[float] = None
+    profile_photo_url: Optional[str] = None
+    license_number: Optional[str] = None
+    license_expiry_date: Optional[str] = None
+    license_photo_url: Optional[str] = None
+    kyc_documents_urls: Optional[List[str]] = None
+    emergency_contact: Optional[str] = None
+    blood_type: Optional[str] = None
+    can_drive_2wheeler: Optional[bool] = None
+    can_drive_4wheeler: Optional[bool] = None
+    upi_id: Optional[str] = None
 
 class DriverResponse(BaseModel):
     id: str
@@ -79,6 +99,17 @@ class DriverResponse(BaseModel):
     job_start_date: str
     base_salary: float
     standard_hours: float
+    profile_photo_url: Optional[str] = None
+    license_number: Optional[str] = None
+    license_expiry_date: Optional[str] = None
+    license_photo_url: Optional[str] = None
+    kyc_documents_urls: Optional[List[str]] = []
+    emergency_contact: Optional[str] = None
+    blood_type: Optional[str] = None
+    can_drive_2wheeler: bool = False
+    can_drive_4wheeler: bool = False
+    upi_id: Optional[str] = None
+    license_expiring_soon: Optional[bool] = False
     created_at: str
 
 class DutyEntryCreate(BaseModel):
