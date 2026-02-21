@@ -298,7 +298,7 @@ async def get_admin_user(user: dict = Depends(get_current_user)):
 # ============ CALCULATION HELPERS ============
 
 def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: float, settings: dict):
-    """Calculate hours worked, overtime, conveyance, and dinner allowance"""
+    """Calculate hours worked, overtime, conveyance, dinner, and breakfast allowances"""
     in_time = datetime.fromisoformat(in_time_str)
     out_time = datetime.fromisoformat(out_time_str)
     
@@ -313,25 +313,41 @@ def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: 
     # Round up to nearest 15 minutes
     overtime_minutes = int((overtime_minutes_exact + 14) // 15) * 15
     
-    # Conveyance: triggered after working standard_hours + trigger_hours OR after dinner_trigger_time
-    conveyance_trigger_total_hours = standard_hours + settings['conveyance_trigger_hours_after_standard']
-    conveyance_by_hours = hours_worked >= conveyance_trigger_total_hours
+    # Breakfast: triggered if in_time is before breakfast_trigger_before_time (e.g., 07:30)
+    breakfast_trigger_parts = settings.get('breakfast_trigger_before_time', '07:30').split(':')
+    breakfast_trigger_hour = int(breakfast_trigger_parts[0])
+    breakfast_trigger_minute = int(breakfast_trigger_parts[1])
+    breakfast_trigger_time = in_time.replace(hour=breakfast_trigger_hour, minute=breakfast_trigger_minute, second=0, microsecond=0)
+    breakfast_given = in_time < breakfast_trigger_time
     
-    # Check if out_time is after dinner_trigger_time (e.g., "23:30")
-    dinner_trigger_time_parts = settings['dinner_trigger_time'].split(':')
-    trigger_hour = int(dinner_trigger_time_parts[0])
-    trigger_minute = int(dinner_trigger_time_parts[1])
-    trigger_time = out_time.replace(hour=trigger_hour, minute=trigger_minute, second=0, microsecond=0)
-    conveyance_by_time = out_time >= trigger_time
+    # Conveyance: triggered if in_time before 08:00 OR out_time after 23:30
+    conveyance_before_parts = settings.get('conveyance_trigger_before_time', '08:00').split(':')
+    conveyance_before_hour = int(conveyance_before_parts[0])
+    conveyance_before_minute = int(conveyance_before_parts[1])
+    conveyance_before_trigger = in_time.replace(hour=conveyance_before_hour, minute=conveyance_before_minute, second=0, microsecond=0)
+    conveyance_by_early_start = in_time < conveyance_before_trigger
     
-    conveyance_given = conveyance_by_hours or conveyance_by_time
-    dinner_given = conveyance_by_hours or conveyance_by_time  # Same conditions for both
+    conveyance_after_parts = settings.get('conveyance_trigger_after_time', '23:30').split(':')
+    conveyance_after_hour = int(conveyance_after_parts[0])
+    conveyance_after_minute = int(conveyance_after_parts[1])
+    conveyance_after_trigger = out_time.replace(hour=conveyance_after_hour, minute=conveyance_after_minute, second=0, microsecond=0)
+    conveyance_by_late_end = out_time >= conveyance_after_trigger
+    
+    conveyance_given = conveyance_by_early_start or conveyance_by_late_end
+    
+    # Dinner: triggered if out_time is after dinner_trigger_after_time (e.g., 23:00)
+    dinner_trigger_parts = settings.get('dinner_trigger_after_time', '23:00').split(':')
+    dinner_trigger_hour = int(dinner_trigger_parts[0])
+    dinner_trigger_minute = int(dinner_trigger_parts[1])
+    dinner_trigger_time = out_time.replace(hour=dinner_trigger_hour, minute=dinner_trigger_minute, second=0, microsecond=0)
+    dinner_given = out_time >= dinner_trigger_time
     
     return {
         'hours_worked': round(hours_worked, 2),
         'overtime_minutes': overtime_minutes,
         'conveyance_given': conveyance_given,
-        'dinner_given': dinner_given
+        'dinner_given': dinner_given,
+        'breakfast_given': breakfast_given
     }
 
 # ============ AUTH ROUTES ============
