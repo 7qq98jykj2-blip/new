@@ -18,7 +18,7 @@ export default function BonusesManagement({ user, onLogout }) {
     driver_id: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
-    bonus_type: 'monthly',
+    bonus_type: 'all',
     reason: '',
   });
   const navigate = useNavigate();
