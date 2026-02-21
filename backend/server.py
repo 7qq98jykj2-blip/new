@@ -227,6 +227,7 @@ class SettingsResponse(BaseModel):
     conveyance_trigger_after_time: str  # e.g., "23:30"
     dinner_trigger_after_time: str  # e.g., "23:00"
     breakfast_trigger_before_time: str  # e.g., "07:30"
+    grace_period_minutes: int  # Grace period before overtime calculation
     working_days_per_week: int
     days_in_month: int
 
@@ -239,6 +240,7 @@ class SettingsUpdate(BaseModel):
     conveyance_trigger_after_time: Optional[str] = None
     dinner_trigger_after_time: Optional[str] = None
     breakfast_trigger_before_time: Optional[str] = None
+    grace_period_minutes: Optional[int] = None
     working_days_per_week: Optional[int] = None
     days_in_month: Optional[int] = None
 
