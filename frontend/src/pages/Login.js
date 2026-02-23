@@ -95,14 +95,6 @@ export default function Login({ onLogin }) {
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-zinc-200">
-              <p className="text-xs text-zinc-500 text-center">
-                Demo Credentials:<br />
-                Admin: 9999999999 / admin123<br />
-                Driver: 8888888888 / driver123
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
