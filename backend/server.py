@@ -60,12 +60,14 @@ class DriverCreate(BaseModel):
     job_start_date: str
     base_salary: float
     standard_hours: float
-    profile_photo_url: Optional[str] = None
-    aadhaar_photo_url: Optional[str] = None
-    pan_card_photo_url: Optional[str] = None
-    license_number: Optional[str] = None
+    driver_photo: Optional[str] = None
+    aadhaar_card_photo: Optional[str] = None
+    pan_card_photo: Optional[str] = None
+    other_kyc_document: Optional[str] = None
+    driving_license_number: Optional[str] = None
+    driving_license_photo_front: Optional[str] = None
+    driving_license_photo_back: Optional[str] = None
     license_expiry_date: Optional[str] = None
-    license_photo_url: Optional[str] = None
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: bool = False
@@ -81,12 +83,14 @@ class DriverUpdate(BaseModel):
     job_start_date: Optional[str] = None
     base_salary: Optional[float] = None
     standard_hours: Optional[float] = None
-    profile_photo_url: Optional[str] = None
-    aadhaar_photo_url: Optional[str] = None
-    pan_card_photo_url: Optional[str] = None
-    license_number: Optional[str] = None
+    driver_photo: Optional[str] = None
+    aadhaar_card_photo: Optional[str] = None
+    pan_card_photo: Optional[str] = None
+    other_kyc_document: Optional[str] = None
+    driving_license_number: Optional[str] = None
+    driving_license_photo_front: Optional[str] = None
+    driving_license_photo_back: Optional[str] = None
     license_expiry_date: Optional[str] = None
-    license_photo_url: Optional[str] = None
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: Optional[bool] = None
@@ -103,12 +107,14 @@ class DriverResponse(BaseModel):
     job_start_date: str
     base_salary: float
     standard_hours: float
-    profile_photo_url: Optional[str] = None
-    aadhaar_photo_url: Optional[str] = None
-    pan_card_photo_url: Optional[str] = None
-    license_number: Optional[str] = None
+    driver_photo: Optional[str] = None
+    aadhaar_card_photo: Optional[str] = None
+    pan_card_photo: Optional[str] = None
+    other_kyc_document: Optional[str] = None
+    driving_license_number: Optional[str] = None
+    driving_license_photo_front: Optional[str] = None
+    driving_license_photo_back: Optional[str] = None
     license_expiry_date: Optional[str] = None
-    license_photo_url: Optional[str] = None
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: bool = False
@@ -1006,6 +1012,10 @@ app.include_router(api_router)
 # Include new feature routes
 from routes_new_features import router as new_features_router
 app.include_router(new_features_router, prefix="/api")
+
+# Include file upload routes
+from file_upload import router as file_upload_router
+app.include_router(file_upload_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
