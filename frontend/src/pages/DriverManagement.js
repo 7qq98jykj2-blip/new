@@ -18,9 +18,21 @@ export default function DriverManagement({ user, onLogout }) {
     aadhaar_number: '',
     address: '',
     phone: '',
+    password: '',
     job_start_date: '',
     base_salary: '',
     standard_hours: '10',
+    profile_photo_url: '',
+    aadhaar_photo_url: '',
+    pan_card_photo_url: '',
+    license_number: '',
+    license_expiry_date: '',
+    license_photo_url: '',
+    emergency_contact: '',
+    blood_type: '',
+    can_drive_2wheeler: false,
+    can_drive_4wheeler: false,
+    upi_id: '',
   });
   const navigate = useNavigate();
 
@@ -62,9 +74,21 @@ export default function DriverManagement({ user, onLogout }) {
       aadhaar_number: driver.aadhaar_number,
       address: driver.address,
       phone: driver.phone,
+      password: '',
       job_start_date: driver.job_start_date,
       base_salary: driver.base_salary.toString(),
       standard_hours: driver.standard_hours.toString(),
+      profile_photo_url: driver.profile_photo_url || '',
+      aadhaar_photo_url: driver.aadhaar_photo_url || '',
+      pan_card_photo_url: driver.pan_card_photo_url || '',
+      license_number: driver.license_number || '',
+      license_expiry_date: driver.license_expiry_date || '',
+      license_photo_url: driver.license_photo_url || '',
+      emergency_contact: driver.emergency_contact || '',
+      blood_type: driver.blood_type || '',
+      can_drive_2wheeler: driver.can_drive_2wheeler || false,
+      can_drive_4wheeler: driver.can_drive_4wheeler || false,
+      upi_id: driver.upi_id || '',
     });
     setIsDialogOpen(true);
   };
@@ -86,9 +110,21 @@ export default function DriverManagement({ user, onLogout }) {
       aadhaar_number: '',
       address: '',
       phone: '',
+      password: '',
       job_start_date: '',
       base_salary: '',
       standard_hours: '10',
+      profile_photo_url: '',
+      aadhaar_photo_url: '',
+      pan_card_photo_url: '',
+      license_number: '',
+      license_expiry_date: '',
+      license_photo_url: '',
+      emergency_contact: '',
+      blood_type: '',
+      can_drive_2wheeler: false,
+      can_drive_4wheeler: false,
+      upi_id: '',
     });
     setEditingDriver(null);
   };
@@ -130,87 +166,229 @@ export default function DriverManagement({ user, onLogout }) {
               <DialogHeader>
                 <DialogTitle>{editingDriver ? 'Edit Driver' : 'Add New Driver'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-zinc-900">Basic Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name">Full Name *</Label>
+                      <Input
+                        id="full_name"
+                        data-testid="driver-full-name-input"
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number *</Label>
+                      <Input
+                        id="phone"
+                        data-testid="driver-phone-input"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name</Label>
+                    <Label htmlFor="password">Password * {editingDriver && '(leave empty to keep current)'}</Label>
                     <Input
-                      id="full_name"
-                      data-testid="driver-full-name-input"
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      required
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required={!editingDriver}
+                      placeholder={editingDriver ? 'Leave empty to keep current password' : ''}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Input
-                      id="aadhaar_number"
-                      data-testid="driver-aadhaar-input"
-                      value={formData.aadhaar_number}
-                      onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value })}
+                      id="address"
+                      data-testid="driver-address-input"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    data-testid="driver-address-input"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      data-testid="driver-phone-input"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job_start_date">Job Start Date</Label>
-                    <Input
-                      id="job_start_date"
-                      data-testid="driver-job-start-input"
-                      type="date"
-                      value={formData.job_start_date}
-                      onChange={(e) => setFormData({ ...formData, job_start_date: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="base_salary">Base Monthly Salary (₹)</Label>
-                    <Input
-                      id="base_salary"
-                      data-testid="driver-salary-input"
-                      type="number"
-                      value={formData.base_salary}
-                      onChange={(e) => setFormData({ ...formData, base_salary: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="standard_hours">Standard Duty Hours/Day</Label>
-                    <Input
-                      id="standard_hours"
-                      data-testid="driver-hours-input"
-                      type="number"
-                      step="0.5"
-                      value={formData.standard_hours}
-                      onChange={(e) => setFormData({ ...formData, standard_hours: e.target.value })}
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact">Emergency Contact</Label>
+                      <Input
+                        id="emergency_contact"
+                        value={formData.emergency_contact}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
+                        placeholder="+91 XXXXXXXXXX"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="blood_type">Blood Type</Label>
+                      <Input
+                        id="blood_type"
+                        value={formData.blood_type}
+                        onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })}
+                        placeholder="A+, B-, O+, etc."
+                      />
+                    </div>
                   </div>
                 </div>
+
+                {/* Job Details */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-zinc-900">Job Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job_start_date">Job Start Date *</Label>
+                      <Input
+                        id="job_start_date"
+                        data-testid="driver-job-start-input"
+                        type="date"
+                        value={formData.job_start_date}
+                        onChange={(e) => setFormData({ ...formData, job_start_date: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="standard_hours">Standard Duty Hours/Day *</Label>
+                      <Input
+                        id="standard_hours"
+                        data-testid="driver-hours-input"
+                        type="number"
+                        step="0.5"
+                        value={formData.standard_hours}
+                        onChange={(e) => setFormData({ ...formData, standard_hours: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="base_salary">Base Monthly Salary (₹) *</Label>
+                      <Input
+                        id="base_salary"
+                        data-testid="driver-salary-input"
+                        type="number"
+                        value={formData.base_salary}
+                        onChange={(e) => setFormData({ ...formData, base_salary: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="upi_id">UPI ID</Label>
+                      <Input
+                        id="upi_id"
+                        value={formData.upi_id}
+                        onChange={(e) => setFormData({ ...formData, upi_id: e.target.value })}
+                        placeholder="name@upi"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Documents & Photos */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-zinc-900">Documents & Photos</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="profile_photo_url">Driver Photo URL</Label>
+                      <Input
+                        id="profile_photo_url"
+                        value={formData.profile_photo_url}
+                        onChange={(e) => setFormData({ ...formData, profile_photo_url: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="aadhaar_number">Aadhaar Number *</Label>
+                      <Input
+                        id="aadhaar_number"
+                        data-testid="driver-aadhaar-input"
+                        value={formData.aadhaar_number}
+                        onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="aadhaar_photo_url">Aadhaar Card Photo URL</Label>
+                      <Input
+                        id="aadhaar_photo_url"
+                        value={formData.aadhaar_photo_url}
+                        onChange={(e) => setFormData({ ...formData, aadhaar_photo_url: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pan_card_photo_url">PAN Card Photo URL</Label>
+                      <Input
+                        id="pan_card_photo_url"
+                        value={formData.pan_card_photo_url}
+                        onChange={(e) => setFormData({ ...formData, pan_card_photo_url: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Driving License */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-zinc-900">Driving License</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="license_number">License Number</Label>
+                      <Input
+                        id="license_number"
+                        value={formData.license_number}
+                        onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="license_expiry_date">License Expiry Date</Label>
+                      <Input
+                        id="license_expiry_date"
+                        type="date"
+                        value={formData.license_expiry_date}
+                        onChange={(e) => setFormData({ ...formData, license_expiry_date: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="license_photo_url">License Photo URL</Label>
+                    <Input
+                      id="license_photo_url"
+                      value={formData.license_photo_url}
+                      onChange={(e) => setFormData({ ...formData, license_photo_url: e.target.value })}
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label>Vehicle License Type</Label>
+                    <div className="flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.can_drive_2wheeler}
+                          onChange={(e) => setFormData({ ...formData, can_drive_2wheeler: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">2-Wheeler</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.can_drive_4wheeler}
+                          onChange={(e) => setFormData({ ...formData, can_drive_4wheeler: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">4-Wheeler</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" data-testid="driver-form-submit" className="flex-1 bg-zinc-900 hover:bg-zinc-800">
                     {editingDriver ? 'Update Driver' : 'Create Driver'}

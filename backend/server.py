@@ -56,14 +56,16 @@ class DriverCreate(BaseModel):
     aadhaar_number: str
     address: str
     phone: str
+    password: str  # Password for driver login
     job_start_date: str
     base_salary: float
     standard_hours: float
     profile_photo_url: Optional[str] = None
+    aadhaar_photo_url: Optional[str] = None
+    pan_card_photo_url: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry_date: Optional[str] = None
     license_photo_url: Optional[str] = None
-    kyc_documents_urls: Optional[List[str]] = []
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: bool = False
@@ -75,14 +77,16 @@ class DriverUpdate(BaseModel):
     aadhaar_number: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
+    password: Optional[str] = None
     job_start_date: Optional[str] = None
     base_salary: Optional[float] = None
     standard_hours: Optional[float] = None
     profile_photo_url: Optional[str] = None
+    aadhaar_photo_url: Optional[str] = None
+    pan_card_photo_url: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry_date: Optional[str] = None
     license_photo_url: Optional[str] = None
-    kyc_documents_urls: Optional[List[str]] = None
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: Optional[bool] = None
@@ -100,10 +104,11 @@ class DriverResponse(BaseModel):
     base_salary: float
     standard_hours: float
     profile_photo_url: Optional[str] = None
+    aadhaar_photo_url: Optional[str] = None
+    pan_card_photo_url: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry_date: Optional[str] = None
     license_photo_url: Optional[str] = None
-    kyc_documents_urls: Optional[List[str]] = []
     emergency_contact: Optional[str] = None
     blood_type: Optional[str] = None
     can_drive_2wheeler: bool = False
@@ -403,11 +408,35 @@ async def get_me(user: dict = Depends(get_current_user)):
 
 @api_router.post('/drivers', response_model=DriverResponse)
 async def create_driver(driver_data: DriverCreate, user: dict = Depends(get_admin_user)):
+    # Check if user with this phone already exists
+    existing_user = await db.users.find_one({'mobile': driver_data.phone}, {'_id': 0})
+    
+    user_id = None
+    if not existing_user:
+        # Create user account for driver
+        user_id = str(uuid.uuid4())
+        user_doc = {
+            'id': user_id,
+            'mobile': driver_data.phone,
+            'password_hash': hash_password(driver_data.password),
+            'name': driver_data.full_name,
+            'role': 'driver',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_doc)
+    else:
+        user_id = existing_user['id']
+        # Update password if provided
+        await db.users.update_one(
+            {'id': user_id},
+            {'$set': {'password_hash': hash_password(driver_data.password)}}
+        )
+    
     driver_id = str(uuid.uuid4())
     driver_doc = {
         'id': driver_id,
-        'user_id': None,
-        **driver_data.model_dump(),
+        'user_id': user_id,
+        **{k: v for k, v in driver_data.model_dump().items() if k != 'password'},
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     
@@ -428,16 +457,43 @@ async def get_driver(driver_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.put('/drivers/{driver_id}', response_model=DriverResponse)
 async def update_driver(driver_id: str, driver_data: DriverUpdate, user: dict = Depends(get_admin_user)):
-    update_data = {k: v for k, v in driver_data.model_dump().items() if v is not None}
-    if not update_data:
+    update_data = {k: v for k, v in driver_data.model_dump().items() if v is not None and k != 'password'}
+    if not update_data and not driver_data.password:
         raise HTTPException(status_code=400, detail='No data to update')
     
-    result = await db.drivers.update_one({'id': driver_id}, {'$set': update_data})
-    if result.matched_count == 0:
+    # Get existing driver
+    driver = await db.drivers.find_one({'id': driver_id}, {'_id': 0})
+    if not driver:
         raise HTTPException(status_code=404, detail='Driver not found')
     
-    driver = await db.drivers.find_one({'id': driver_id}, {'_id': 0})
-    return DriverResponse(**driver)
+    # Update driver password if provided
+    if driver_data.password:
+        if driver.get('user_id'):
+            await db.users.update_one(
+                {'id': driver['user_id']},
+                {'$set': {'password_hash': hash_password(driver_data.password)}}
+            )
+        else:
+            # Create user account if doesn't exist
+            user_id = str(uuid.uuid4())
+            user_doc = {
+                'id': user_id,
+                'mobile': driver.get('phone'),
+                'password_hash': hash_password(driver_data.password),
+                'name': driver.get('full_name'),
+                'role': 'driver',
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(user_doc)
+            update_data['user_id'] = user_id
+    
+    if update_data:
+        result = await db.drivers.update_one({'id': driver_id}, {'$set': update_data})
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail='Driver not found')
+    
+    updated_driver = await db.drivers.find_one({'id': driver_id}, {'_id': 0})
+    return DriverResponse(**updated_driver)
 
 @api_router.delete('/drivers/{driver_id}')
 async def delete_driver(driver_id: str, user: dict = Depends(get_admin_user)):
