@@ -1,0 +1,37 @@
+{
+  "summary": "Verified overtime grace-period fix works correctly per spec. However, discovered CRITICAL bug: admin approve/reject endpoint returns HTTP 500 because DutyApprovalUpdate model in routes_new_features.py is missing fields the handler tries to access.",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "Admin login (9999999999/admin123) works",
+    "Driver login (8888888888/driver123) works",
+    "GET /api/settings returns grace_period_minutes=15",
+    "POST /api/duty-entries with in=08:00 out=18:00 (std=10h) -> OT=0",
+    "10-min OT (below grace) -> OT=0 (correct)",
+    "15-min OT (equals grace) -> OT=0 (correct, must EXCEED grace)",
+    "16-min OT (>grace) -> OT=30 rounded up to nearest 15 (correct)",
+    "20/30-min OT -> OT=30 (correct)",
+    "31-min OT -> OT=45 (correct)",
+    "60-min OT -> OT=60 (correct)",
+    "Early departure: 9h29 (31min short) -> early_departure=true, minutes=31",
+    "Early departure: 9h35 (25min short) -> early_departure=false",
+    "Details mandatory when OT>0 -> 400 'Details are mandatory when overtime is worked'",
+    "PUT /api/settings weekly_off_day update persists (saturday -> sunday)",
+    "GET /api/payroll/{driver}/2026/11 returns all fields: base_salary, total_overtime_amount, total_conveyance, total_dinner, total_breakfast, total_bonuses, total_expenses, total_advances, leave_deductions, loan_deductions",
+    "Frontend loads, admin login redirects to /admin, Duty Approvals page renders 5 pending entries with Approve/Reject buttons"
+  ],
+  "failed": [
+    {
+      "area": "backend/admin-approval",
+      "issue": "PUT /api/duty-entries/{id}/approve returns 500 Internal Server Error. Backend log: AttributeError: 'DutyApprovalUpdate' object has no attribute 'overtime_minutes'. The DutyApprovalUpdate model defined in /app/backend/routes_new_features.py (line 87-88) only declares 'approval_status', but the approve_duty_entry handler (lines 323-328) accesses approval.overtime_minutes, approval.admin_remarks, and approval.remark_text. A complete DutyApprovalUpdate model with these fields already exists in server.py (line 167-171) but is not being used here.",
+      "evidence": "curl PUT /api/duty-entries/<id>/approve -> HTTP 500. Frontend toast: 'Failed to update approval status'. Traceback in /var/log/supervisor/backend.err.log at routes_new_features.py:323.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "Fix /app/backend/routes_new_features.py: extend the local DutyApprovalUpdate model (line 87) to include: overtime_minutes: Optional[int]=None, admin_remarks: Optional[str]=None, remark_text: Optional[str]=None. Or import the full model from server.py instead of redefining. This unblocks the entire admin approval/reject flow (Approve button, Reject button, Edit-then-approve, and bulk Select-All approve)."
+  ],
+  "success_rate": {"backend": "93%", "frontend": "80%"},
+  "retest_needed": true,
+  "full_testing_deferred": true,
+  "notes": "Overtime grace-period fix in calculate_duty_details is fully verified and working correctly. The approve endpoint bug is a regression (or pre-existing bug not caught previously) that blocks the primary admin workflow."
+}

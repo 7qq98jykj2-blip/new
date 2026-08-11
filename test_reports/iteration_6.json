@@ -1,0 +1,24 @@
+{
+  "summary": "Final verification PASSED. Both critical fixes confirmed: (1) DutyApprovalUpdate model now accepts overtime_minutes, admin_remarks, remark_text — admin approve/reject endpoints return 200 and persist all fields correctly. (2) Overtime grace-period behaves as threshold (>15 min triggers OT, then rounded up to nearest 15). End-to-end UI approval flow, edit-then-approve, and bulk Select-All + Approve all work.",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "Admin login (9999999999/admin123) succeeds and redirects to /admin",
+    "PUT /api/duty-entries/{id}/approve with {approval_status:approved, overtime_minutes:45, admin_remarks:'Verified by admin'} -> 200 and fields persist (verified via GET)",
+    "PUT /api/duty-entries/{id}/approve with {approval_status:rejected, remark_text:'Missing docs'} -> 200; status=rejected, remark_text persisted",
+    "PUT /api/duty-entries/{id}/approve minimal payload {approval_status:approved} -> 200 (backward compatible)",
+    "Grace period regression: std=10h driver, 15-min excess -> OT=0 (not exceeding threshold)",
+    "Grace period regression: std=10h driver, 16-min excess -> OT=30 (rounded up to nearest 15)",
+    "Grace period regression: std=10h driver, 31-min excess -> OT=45",
+    "UI: Duty Approvals page reachable via 'Review' button on admin dashboard; shows 6 pending entries with Edit/Approve/Reject per row",
+    "UI: Clicking Approve shows toast 'Duty entry approved' and refreshes list",
+    "UI: Edit dialog opens with 'Review & Edit Entry' — contains Overtime (minutes) input, Admin Remarks textarea, 'Approve with Changes' and 'Reject' buttons",
+    "UI: Select All reveals bulk 'Approve (N)' and 'Reject (N)' buttons in header",
+    "UI: Bulk approve clicked -> toast '5 entries approved'; Pending Approvals count drops to 0 and 'No pending duty entries' shown"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Iteration-5 blocker resolved. All admin approval variants (approve, reject, approve-with-changes/overtime modify, bulk approve) and overtime grace-period calculation verified end-to-end."
+}

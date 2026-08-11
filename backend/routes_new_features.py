@@ -86,6 +86,9 @@ class LeaveRecordResponse(BaseModel):
 
 class DutyApprovalUpdate(BaseModel):
     approval_status: str  # approved or rejected
+    overtime_minutes: Optional[int] = None
+    admin_remarks: Optional[str] = None
+    remark_text: Optional[str] = None
 
 # ============ ADVANCE ROUTES ============
 

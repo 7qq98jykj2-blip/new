@@ -349,9 +349,8 @@ def calculate_duty_details(in_time_str: str, out_time_str: str, standard_hours: 
     # Apply grace period - only count overtime if it exceeds grace period
     grace_period = settings.get('grace_period_minutes', 0)
     if overtime_minutes_exact > grace_period:
-        overtime_minutes_after_grace = overtime_minutes_exact - grace_period
         # Round up to nearest 15 minutes
-        overtime_minutes = int((overtime_minutes_after_grace + 14) // 15) * 15
+        overtime_minutes = int((overtime_minutes_exact + 14) // 15) * 15
     else:
         overtime_minutes = 0
     
