@@ -269,6 +269,7 @@ class PayrollResponse(BaseModel):
     total_bonuses: float
     total_advances: float
     leave_deductions: float
+    loan_deductions: float
     deductions: float
     net_pay: float
     duty_entries: List[dict]
@@ -276,6 +277,7 @@ class PayrollResponse(BaseModel):
     bonuses: List[dict]
     advances: List[dict]
     leaves: List[dict]
+    loans: List[dict] = []
     payment_proof_url: Optional[str] = None
 
 # ============ AUTH HELPERS ============
@@ -831,6 +833,15 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
         'date': {'$gte': start_date, '$lte': end_date}
     }, {'_id': 0}).to_list(1000)
     
+    # Get active loans for the driver with monthly deductions for this month
+    current_month_str = f"{year}-{month:02d}"
+    active_loans = await db.loans.find({
+        'driver_id': driver_id,
+        'status': 'active',
+        'start_month': {'$lte': current_month_str},
+        'end_month': {'$gte': current_month_str}
+    }, {'_id': 0}).to_list(1000)
+    
     # Get payment proof
     payment_proof = await db.payment_proofs.find_one({
         'driver_id': driver_id,
@@ -860,13 +871,16 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
     # Calculate leave deductions
     leave_deductions = sum([l['deduction_amount'] for l in leaves])
     
+    # Calculate loan deductions for this month
+    total_loan_deductions = sum([loan['monthly_deduction'] for loan in active_loans])
+    
     # Other deductions (can be extended)
     other_deductions = 0
     
     # Net pay calculation
     net_pay = (driver['base_salary'] + total_overtime_amount + total_conveyance + 
                total_dinner + total_breakfast + total_expenses + total_bonuses - total_advances - 
-               leave_deductions - other_deductions)
+               leave_deductions - total_loan_deductions - other_deductions)
     
     return PayrollResponse(
         driver_id=driver_id,
@@ -882,6 +896,7 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
         total_bonuses=round(total_bonuses, 2),
         total_advances=round(total_advances, 2),
         leave_deductions=round(leave_deductions, 2),
+        loan_deductions=round(total_loan_deductions, 2),
         deductions=round(other_deductions, 2),
         net_pay=round(net_pay, 2),
         duty_entries=[{
@@ -916,6 +931,13 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
             'reason': l['reason'],
             'deduction_amount': l['deduction_amount']
         } for l in leaves],
+        loans=[{
+            'id': loan['id'],
+            'amount': loan['amount'],
+            'remaining_amount': loan['remaining_amount'],
+            'monthly_deduction': loan['monthly_deduction'],
+            'reason': loan['reason']
+        } for loan in active_loans],
         payment_proof_url=payment_proof['screenshot_url'] if payment_proof else None
     )
 
@@ -1036,6 +1058,10 @@ app.include_router(new_features_router, prefix="/api")
 # Include file upload routes
 from file_upload import router as file_upload_router
 app.include_router(file_upload_router, prefix="/api")
+
+# Include loans routes
+from loans_routes import router as loans_router
+app.include_router(loans_router)
 
 app.add_middleware(
     CORSMiddleware,
