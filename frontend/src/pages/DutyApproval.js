@@ -1,16 +1,24 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, X } from 'lucide-react';
+import { ArrowLeft, Check, X, Edit } from 'lucide-react';
 
 export default function DutyApproval({ user, onLogout }) {
   const [pendingEntries, setPendingEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editOvertimeMinutes, setEditOvertimeMinutes] = useState(0);
+  const [editRemarkText, setEditRemarkText] = useState('');
+  const [editAdminRemarks, setEditAdminRemarks] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,13 +84,37 @@ export default function DutyApproval({ user, onLogout }) {
     );
   };
 
+  const openEditDialog = (entry) => {
+    setEditingEntry(entry);
+    setEditOvertimeMinutes(entry.overtime_minutes);
+    setEditRemarkText(entry.remark_text || '');
+    setEditAdminRemarks(entry.admin_remarks || '');
+  };
+
+  const handleSaveEdits = async (status) => {
+    if (!editingEntry) return;
+
+    try {
+      await api.put(`/duty-entries/${editingEntry.id}/approve`, {
+        approval_status: status,
+        overtime_minutes: editOvertimeMinutes,
+        remark_text: editRemarkText,
+        admin_remarks: editAdminRemarks
+      });
+      toast.success(`Duty entry ${status} with modifications`);
+      setEditingEntry(null);
+      fetchPendingEntries();
+    } catch (error) {
+      toast.error('Failed to update entry');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-zinc-200 bg-white sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 gap-4">
             <Button
-              data-testid="back-button"
               onClick={() => navigate('/admin')}
               variant="ghost"
               size="sm"
@@ -152,7 +184,7 @@ export default function DutyApproval({ user, onLogout }) {
                     }`}
                   >
                     <div className="flex justify-between items-start gap-4">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 flex-1">
                         <Checkbox
                           checked={selectedIds.includes(entry.id)}
                           onCheckedChange={() => handleSelectEntry(entry.id)}
@@ -171,10 +203,43 @@ export default function DutyApproval({ user, onLogout }) {
                             {entry.overtime_minutes > 0 && (
                               <span className="ml-3">
                                 <span className="text-zinc-950 font-medium">OT: </span>
-                                <span className="mono">{entry.overtime_minutes}m</span>
+                                <span className="mono text-orange-600">{entry.overtime_minutes}m</span>
                               </span>
                             )}
                           </div>
+                          
+                          {/* Show Details */}
+                          {entry.details && (
+                            <div className="mt-3 p-2 bg-zinc-50 rounded border border-zinc-200">
+                              <p className="text-xs font-medium text-zinc-700">Details:</p>
+                              <p className="text-sm text-zinc-600">{entry.details}</p>
+                            </div>
+                          )}
+
+                          {/* Show Remarks */}
+                          {entry.remark_type && (
+                            <div className="mt-2">
+                              <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                entry.remark_type === 'extra_duty_day' 
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              }`}>
+                                {entry.remark_type === 'extra_duty_day' ? 'Extra Duty Day' : 'Misc'}
+                              </span>
+                              {entry.remark_text && (
+                                <p className="text-sm text-zinc-600 mt-1">{entry.remark_text}</p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Early Departure Warning */}
+                          {entry.early_departure && (
+                            <div className="mt-2 p-2 bg-red-50 rounded border border-red-200">
+                              <p className="text-xs font-medium text-red-700">⚠️ Early Departure</p>
+                              <p className="text-sm text-red-600">Left {entry.early_departure_minutes} minutes early</p>
+                            </div>
+                          )}
+
                           <div className="mt-2 flex gap-2 text-xs">
                             {entry.breakfast_given && (
                               <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded">Breakfast</span>
@@ -189,6 +254,15 @@ export default function DutyApproval({ user, onLogout }) {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          onClick={() => openEditDialog(entry)}
+                          size="sm"
+                          variant="outline"
+                          className="text-zinc-600 hover:text-zinc-900"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
                         <Button
                           onClick={() => handleApproval(entry.id, 'approved')}
                           size="sm"
@@ -215,6 +289,86 @@ export default function DutyApproval({ user, onLogout }) {
           </CardContent>
         </Card>
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingEntry} onOpenChange={() => setEditingEntry(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Review & Edit Entry</DialogTitle>
+          </DialogHeader>
+          {editingEntry && (
+            <div className="space-y-4">
+              <div className="p-3 bg-zinc-50 rounded">
+                <p className="text-sm font-medium">{editingEntry.driver_name}</p>
+                <p className="text-xs text-zinc-600">{editingEntry.date}</p>
+                <p className="text-xs text-zinc-600">
+                  {new Date(editingEntry.in_time).toLocaleTimeString('en-IN')} - 
+                  {new Date(editingEntry.out_time).toLocaleTimeString('en-IN')}
+                </p>
+              </div>
+
+              {editingEntry.details && (
+                <div>
+                  <Label>Driver Details</Label>
+                  <p className="text-sm text-zinc-600 p-2 bg-zinc-50 rounded mt-1">{editingEntry.details}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-overtime">Overtime (minutes)</Label>
+                <Input
+                  id="edit-overtime"
+                  type="number"
+                  value={editOvertimeMinutes}
+                  onChange={(e) => setEditOvertimeMinutes(parseInt(e.target.value) || 0)}
+                />
+                <p className="text-xs text-zinc-500">Modify if needed</p>
+              </div>
+
+              {editingEntry.remark_text && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-remark">Driver Remark</Label>
+                  <Textarea
+                    id="edit-remark"
+                    value={editRemarkText}
+                    onChange={(e) => setEditRemarkText(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="admin-remarks">Admin Remarks</Label>
+                <Textarea
+                  id="admin-remarks"
+                  value={editAdminRemarks}
+                  onChange={(e) => setEditAdminRemarks(e.target.value)}
+                  placeholder="Add your remarks (optional)"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => handleSaveEdits('approved')}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Approve with Changes
+                </Button>
+                <Button
+                  onClick={() => handleSaveEdits('rejected')}
+                  variant="outline"
+                  className="flex-1 text-red-600 hover:text-red-700 border-red-600"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

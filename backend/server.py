@@ -128,10 +128,18 @@ class DutyEntryCreate(BaseModel):
     date: str
     in_time: str
     out_time: str
+    details: Optional[str] = None  # Mandatory for overtime
+    remark_type: Optional[str] = None  # None, 'misc', 'extra_duty_day'
+    remark_text: Optional[str] = None
 
 class DutyEntryUpdate(BaseModel):
     in_time: Optional[str] = None
     out_time: Optional[str] = None
+    details: Optional[str] = None
+    remark_type: Optional[str] = None
+    remark_text: Optional[str] = None
+    admin_remarks: Optional[str] = None
+    overtime_minutes: Optional[int] = None  # Admin can modify
 
 class DutyEntryResponse(BaseModel):
     id: str
@@ -146,10 +154,19 @@ class DutyEntryResponse(BaseModel):
     dinner_given: bool
     breakfast_given: bool
     approval_status: str  # pending, approved, rejected
+    details: Optional[str] = None
+    remark_type: Optional[str] = None
+    remark_text: Optional[str] = None
+    admin_remarks: Optional[str] = None
+    early_departure: bool = False
+    early_departure_minutes: int = 0
     created_at: str
 
 class DutyApprovalUpdate(BaseModel):
     approval_status: str  # approved or rejected
+    overtime_minutes: Optional[int] = None
+    admin_remarks: Optional[str] = None
+    remark_text: Optional[str] = None
 
 class AdvanceCreate(BaseModel):
     driver_id: str
@@ -566,6 +583,25 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
         settings
     )
     
+    # Validate: Details mandatory if overtime
+    if details['overtime_minutes'] > 0 and not entry_data.details:
+        raise HTTPException(status_code=400, detail='Details are mandatory when overtime is worked')
+    
+    # Check for early departure (>30 minutes before standard hours)
+    in_time = datetime.fromisoformat(entry_data.in_time)
+    out_time = datetime.fromisoformat(entry_data.out_time)
+    duration = out_time - in_time
+    hours_worked = duration.total_seconds() / 3600
+    
+    early_departure = False
+    early_departure_minutes = 0
+    if hours_worked < driver['standard_hours']:
+        shortfall_hours = driver['standard_hours'] - hours_worked
+        shortfall_minutes = int(shortfall_hours * 60)
+        if shortfall_minutes > 30:
+            early_departure = True
+            early_departure_minutes = shortfall_minutes
+    
     entry_id = str(uuid.uuid4())
     entry_doc = {
         'id': entry_id,
@@ -579,6 +615,12 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
         'dinner_given': details['dinner_given'],
         'breakfast_given': details['breakfast_given'],
         'approval_status': 'pending',
+        'details': entry_data.details,
+        'remark_type': entry_data.remark_type,
+        'remark_text': entry_data.remark_text,
+        'admin_remarks': None,
+        'early_departure': early_departure,
+        'early_departure_minutes': early_departure_minutes,
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     

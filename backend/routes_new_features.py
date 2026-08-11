@@ -316,9 +316,20 @@ async def delete_leave(leave_id: str):
 
 @router.put('/duty-entries/{entry_id}/approve')
 async def approve_duty_entry(entry_id: str, approval: DutyApprovalUpdate):
+    # Build update dict
+    update_data = {'approval_status': approval.approval_status}
+    
+    # Allow admin to modify overtime, remarks
+    if approval.overtime_minutes is not None:
+        update_data['overtime_minutes'] = approval.overtime_minutes
+    if approval.admin_remarks is not None:
+        update_data['admin_remarks'] = approval.admin_remarks
+    if approval.remark_text is not None:
+        update_data['remark_text'] = approval.remark_text
+    
     result = await db.duty_entries.update_one(
         {'id': entry_id},
-        {'$set': {'approval_status': approval.approval_status}}
+        {'$set': update_data}
     )
     
     if result.matched_count == 0:
