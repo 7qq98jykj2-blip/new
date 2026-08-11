@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
-import { Camera, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, X } from 'lucide-react';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
 

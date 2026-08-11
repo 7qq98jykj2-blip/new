@@ -454,6 +454,26 @@ async def list_drivers(user: dict = Depends(get_current_user)):
     drivers = await db.drivers.find({}, {'_id': 0}).to_list(1000)
     return [DriverResponse(**d) for d in drivers]
 
+@api_router.get('/drivers/expiring-licenses', response_model=List[DriverResponse])
+async def get_expiring_licenses(days: int = 60, user: dict = Depends(get_current_user)):
+    """Get drivers whose licenses are expiring within the specified number of days"""
+    from datetime import date, timedelta
+    
+    today = date.today()
+    threshold_date = today + timedelta(days=days)
+    
+    # Query drivers with license expiry dates
+    drivers = await db.drivers.find({
+        'license_expiry_date': {
+            '$exists': True,
+            '$ne': None,
+            '$ne': '',
+            '$lte': threshold_date.isoformat()
+        }
+    }, {'_id': 0}).to_list(1000)
+    
+    return [DriverResponse(**d) for d in drivers]
+
 @api_router.get('/drivers/{driver_id}', response_model=DriverResponse)
 async def get_driver(driver_id: str, user: dict = Depends(get_current_user)):
     driver = await db.drivers.find_one({'id': driver_id}, {'_id': 0})

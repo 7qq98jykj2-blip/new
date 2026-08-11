@@ -1,0 +1,56 @@
+{
+  "summary": "Backend smoke tests reveal 4 critical endpoints failing due to schema mismatch between Pydantic response models and existing DB records/seeded data. Frontend UI is largely functional: login, dashboard (with Rupee symbols), driver list, Add Driver modal, and Settings page render correctly. However, Settings shows 'Failed to fetch settings' toast because the /api/settings endpoint 500s.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "POST /api/auth/login admin (9999999999/admin123) returns valid JWT + user object",
+    "POST /api/auth/login driver (8888888888/driver123) returns valid JWT + user object",
+    "GET /api/drivers returns 5 seeded drivers",
+    "POST /api/upload endpoint reachable, rejects invalid extension with 400 (expected behavior; accepts .jpg/.jpeg/.png)",
+    "Admin dashboard renders: Active Drivers=5, Current Month Payroll=₹1,33,000, Today's Entries=0",
+    "All monetary values display with ₹ symbol on dashboard and Manage Drivers page",
+    "Add Driver modal opens with 'Take Photo' + 'Upload Image' ImageUpload buttons for Driver Photo, Aadhaar, PAN fields",
+    "Settings page UI renders with Overtime Rate (₹25/15min), Grace Period (15), Breakfast ₹100, Conveyance ₹75, Dinner ₹200, trigger times (07:30 AM, 08:00 AM, 11:30 PM, 11:00 PM) - values come from form defaults"
+  ],
+  "failed": [
+    {
+      "area": "backend",
+      "issue": "GET /api/settings returns 500 Internal Server Error. SettingsResponse Pydantic model expects 10 fields (conveyance_amount, dinner_amount, breakfast_amount, conveyance_trigger_before_time, conveyance_trigger_after_time, dinner_trigger_after_time, breakfast_trigger_before_time, grace_period_minutes, etc.) that are missing from the settings document in MongoDB.",
+      "evidence": "backend.err.log: 'ValidationError: 10 validation errors for SettingsResponse ... Field required' at server.py line 724. Frontend shows toast 'Failed to fetch settings' on /settings page.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "backend",
+      "issue": "GET /api/duty-entries returns 500 Internal Server Error. DutyEntryResponse expects fields (conveyance_given, dinner_given, breakfast_given, approval_status) that are missing from existing duty entry documents in DB.",
+      "evidence": "backend.err.log: 'ValidationError: 4 validation errors for DutyEntryResponse ... conveyance_given/dinner_given/breakfast_given/approval_status Field required'",
+      "priority": "HIGH"
+    },
+    {
+      "area": "backend",
+      "issue": "GET /api/payroll/{driver_id}/{year}/{month} returns 500. KeyError: settings['conveyance_amount'] because settings doc lacks the field.",
+      "evidence": "backend.err.log line 2322: 'total_conveyance = conveyance_count * settings[conveyance_amount]' KeyError. Manual call to /api/payroll/7c946f6a.../2026/3 returned 500.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "backend",
+      "issue": "GET /api/drivers/expiring-licenses returns 404 Not Found. Frontend AdminDashboard polls this endpoint repeatedly.",
+      "evidence": "backend.out.log: multiple 'GET /api/drivers/expiring-licenses HTTP/1.1 404 Not Found' entries. Endpoint likely not registered or route ordering issue.",
+      "priority": "MEDIUM"
+    },
+    {
+      "area": "frontend",
+      "issue": "Add Driver modal does NOT show 'License Front' or 'License Back' labels/ImageUpload fields in DOM (checked via page inner_text). Task explicitly required ImageUpload for License Front/Back.",
+      "evidence": "Playwright body inner_text scan of open modal: 'License Front': False, 'License Back': False. Screenshot shows only Basic Information and Job Details visible; deeper KYC sections may not include license photo upload widgets.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "Fix /api/settings: either migrate/re-seed the settings document to include the new fields (conveyance_amount, dinner_amount, breakfast_amount, *_trigger_*_time, grace_period_minutes) OR make these fields Optional with defaults in SettingsResponse model. Preferred: run a one-time migration to set defaults in the existing settings doc.",
+    "Fix /api/duty-entries: backfill existing duty entry documents with default values (conveyance_given=false, dinner_given=false, breakfast_given=false, approval_status='pending') OR mark the fields Optional in DutyEntryResponse.",
+    "Fix payroll calculation: it depends on settings so once /api/settings doc is fixed, payroll should work. Add defensive .get('conveyance_amount', 75) fallbacks in calculate_payroll.",
+    "Implement or fix routing for GET /api/drivers/expiring-licenses (currently 404) or remove the frontend polling if intentionally deprecated.",
+    "Verify DriverManagement.js Add Driver form actually includes ImageUpload components for License Front & License Back (fields not detected in DOM); ensure they are rendered and labeled correctly."
+  ],
+  "success_rate": {"backend": "50%", "frontend": "80%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

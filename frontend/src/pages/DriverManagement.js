@@ -5,9 +5,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import ImageUpload from '../components/ImageUpload';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Eye, User } from 'lucide-react';
 
 export default function DriverManagement({ user, onLogout }) {
   const [drivers, setDrivers] = useState([]);
@@ -22,12 +23,14 @@ export default function DriverManagement({ user, onLogout }) {
     job_start_date: '',
     base_salary: '',
     standard_hours: '10',
-    profile_photo_url: '',
-    aadhaar_photo_url: '',
-    pan_card_photo_url: '',
-    license_number: '',
+    driver_photo: '',
+    aadhaar_card_photo: '',
+    pan_card_photo: '',
+    other_kyc_document: '',
+    driving_license_number: '',
+    driving_license_photo_front: '',
+    driving_license_photo_back: '',
     license_expiry_date: '',
-    license_photo_url: '',
     emergency_contact: '',
     blood_type: '',
     can_drive_2wheeler: false,
@@ -78,12 +81,14 @@ export default function DriverManagement({ user, onLogout }) {
       job_start_date: driver.job_start_date,
       base_salary: driver.base_salary.toString(),
       standard_hours: driver.standard_hours.toString(),
-      profile_photo_url: driver.profile_photo_url || '',
-      aadhaar_photo_url: driver.aadhaar_photo_url || '',
-      pan_card_photo_url: driver.pan_card_photo_url || '',
-      license_number: driver.license_number || '',
+      driver_photo: driver.driver_photo || '',
+      aadhaar_card_photo: driver.aadhaar_card_photo || '',
+      pan_card_photo: driver.pan_card_photo || '',
+      other_kyc_document: driver.other_kyc_document || '',
+      driving_license_number: driver.driving_license_number || '',
+      driving_license_photo_front: driver.driving_license_photo_front || '',
+      driving_license_photo_back: driver.driving_license_photo_back || '',
       license_expiry_date: driver.license_expiry_date || '',
-      license_photo_url: driver.license_photo_url || '',
       emergency_contact: driver.emergency_contact || '',
       blood_type: driver.blood_type || '',
       can_drive_2wheeler: driver.can_drive_2wheeler || false,
@@ -114,12 +119,14 @@ export default function DriverManagement({ user, onLogout }) {
       job_start_date: '',
       base_salary: '',
       standard_hours: '10',
-      profile_photo_url: '',
-      aadhaar_photo_url: '',
-      pan_card_photo_url: '',
-      license_number: '',
+      driver_photo: '',
+      aadhaar_card_photo: '',
+      pan_card_photo: '',
+      other_kyc_document: '',
+      driving_license_number: '',
+      driving_license_photo_front: '',
+      driving_license_photo_back: '',
       license_expiry_date: '',
-      license_photo_url: '',
       emergency_contact: '',
       blood_type: '',
       can_drive_2wheeler: false,
@@ -290,47 +297,41 @@ export default function DriverManagement({ user, onLogout }) {
                 {/* Documents & Photos */}
                 <div className="space-y-4 pt-4 border-t">
                   <h3 className="font-semibold text-zinc-900">Documents & Photos</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="profile_photo_url">Driver Photo URL</Label>
-                      <Input
-                        id="profile_photo_url"
-                        value={formData.profile_photo_url}
-                        onChange={(e) => setFormData({ ...formData, profile_photo_url: e.target.value })}
-                        placeholder="https://..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="aadhaar_number">Aadhaar Number *</Label>
-                      <Input
-                        id="aadhaar_number"
-                        data-testid="driver-aadhaar-input"
-                        value={formData.aadhaar_number}
-                        onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value })}
-                        required
-                      />
-                    </div>
+                  
+                  <ImageUpload
+                    label="Driver Photo"
+                    value={formData.driver_photo}
+                    onChange={(url) => setFormData({ ...formData, driver_photo: url })}
+                  />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadhaar_number">Aadhaar Number *</Label>
+                    <Input
+                      id="aadhaar_number"
+                      data-testid="driver-aadhaar-input"
+                      value={formData.aadhaar_number}
+                      onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value })}
+                      required
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="aadhaar_photo_url">Aadhaar Card Photo URL</Label>
-                      <Input
-                        id="aadhaar_photo_url"
-                        value={formData.aadhaar_photo_url}
-                        onChange={(e) => setFormData({ ...formData, aadhaar_photo_url: e.target.value })}
-                        placeholder="https://..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pan_card_photo_url">PAN Card Photo URL</Label>
-                      <Input
-                        id="pan_card_photo_url"
-                        value={formData.pan_card_photo_url}
-                        onChange={(e) => setFormData({ ...formData, pan_card_photo_url: e.target.value })}
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
+
+                  <ImageUpload
+                    label="Aadhaar Card Photo"
+                    value={formData.aadhaar_card_photo}
+                    onChange={(url) => setFormData({ ...formData, aadhaar_card_photo: url })}
+                  />
+
+                  <ImageUpload
+                    label="PAN Card Photo"
+                    value={formData.pan_card_photo}
+                    onChange={(url) => setFormData({ ...formData, pan_card_photo: url })}
+                  />
+
+                  <ImageUpload
+                    label="Other KYC Document (Optional)"
+                    value={formData.other_kyc_document}
+                    onChange={(url) => setFormData({ ...formData, other_kyc_document: url })}
+                  />
                 </div>
 
                 {/* Driving License */}
@@ -338,11 +339,11 @@ export default function DriverManagement({ user, onLogout }) {
                   <h3 className="font-semibold text-zinc-900">Driving License</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="license_number">License Number</Label>
+                      <Label htmlFor="driving_license_number">License Number</Label>
                       <Input
-                        id="license_number"
-                        value={formData.license_number}
-                        onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                        id="driving_license_number"
+                        value={formData.driving_license_number}
+                        onChange={(e) => setFormData({ ...formData, driving_license_number: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
@@ -355,15 +356,18 @@ export default function DriverManagement({ user, onLogout }) {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="license_photo_url">License Photo URL</Label>
-                    <Input
-                      id="license_photo_url"
-                      value={formData.license_photo_url}
-                      onChange={(e) => setFormData({ ...formData, license_photo_url: e.target.value })}
-                      placeholder="https://..."
-                    />
-                  </div>
+
+                  <ImageUpload
+                    label="License Photo (Front)"
+                    value={formData.driving_license_photo_front}
+                    onChange={(url) => setFormData({ ...formData, driving_license_photo_front: url })}
+                  />
+
+                  <ImageUpload
+                    label="License Photo (Back)"
+                    value={formData.driving_license_photo_back}
+                    onChange={(url) => setFormData({ ...formData, driving_license_photo_back: url })}
+                  />
                   <div className="space-y-3">
                     <Label>Vehicle License Type</Label>
                     <div className="flex gap-6">
@@ -410,7 +414,20 @@ export default function DriverManagement({ user, onLogout }) {
           {drivers.map((driver) => (
             <Card key={driver.id} data-testid={`driver-card-${driver.id}`} className="border-zinc-200 shadow-sm card-hover">
               <CardHeader>
-                <CardTitle className="text-lg font-medium">{driver.full_name}</CardTitle>
+                <div className="flex items-center gap-3">
+                  {driver.driver_photo ? (
+                    <img
+                      src={driver.driver_photo.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${driver.driver_photo}` : driver.driver_photo}
+                      alt={driver.full_name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-zinc-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center">
+                      <User className="w-6 h-6 text-zinc-500" />
+                    </div>
+                  )}
+                  <CardTitle className="text-lg font-medium">{driver.full_name}</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
