@@ -142,16 +142,46 @@ export default function PayrollView({ user, onLogout }) {
                 <span className="text-emerald-950 font-medium mono">₹{payrollData.total_overtime_amount.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
-                <span className="text-zinc-900">Food Allowances</span>
-                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_food_allowances.toLocaleString('en-IN')}</span>
+                <span className="text-zinc-900">Conveyance</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_conveyance.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                <span className="text-zinc-900">Breakfast Allowance</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_breakfast.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                <span className="text-zinc-900">Dinner Allowance</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_dinner.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                <span className="text-zinc-900">Bonuses</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_bonuses.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Miscellaneous Expenses</span>
                 <span className="text-emerald-950 font-medium mono">₹{payrollData.total_expenses.toLocaleString('en-IN')}</span>
               </div>
+              {payrollData.total_advances > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                  <span className="text-zinc-900">Advances</span>
+                  <span className="text-red-600 font-medium mono">-₹{payrollData.total_advances.toLocaleString('en-IN')}</span>
+                </div>
+              )}
+              {payrollData.leave_deductions > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                  <span className="text-zinc-900">Leave Deductions</span>
+                  <span className="text-red-600 font-medium mono">-₹{payrollData.leave_deductions.toLocaleString('en-IN')}</span>
+                </div>
+              )}
+              {payrollData.loan_deductions > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                  <span className="text-zinc-900">Loan Deductions</span>
+                  <span className="text-red-600 font-medium mono">-₹{payrollData.loan_deductions.toLocaleString('en-IN')}</span>
+                </div>
+              )}
               {payrollData.deductions > 0 && (
                 <div className="flex justify-between items-center py-2 border-b border-zinc-200">
-                  <span className="text-zinc-900">Deductions</span>
+                  <span className="text-zinc-900">Other Deductions</span>
                   <span className="text-red-600 font-medium mono">-₹{payrollData.deductions.toLocaleString('en-IN')}</span>
                 </div>
               )}
@@ -178,10 +208,14 @@ export default function PayrollView({ user, onLogout }) {
                     <span className="text-zinc-900">{entry.date}</span>
                     <div className="flex gap-4 text-zinc-600">
                       <span className="mono">{entry.hours_worked}h worked</span>
-                      <span className="mono">{entry.overtime_minutes}m OT</span>
-                      <span className={entry.food_allowance_given ? 'text-green-600' : 'text-zinc-400'}>
-                        {entry.food_allowance_given ? '🍽️ Food' : '—'}
-                      </span>
+                      {entry.overtime_minutes > 0 && (
+                        <span className="mono text-orange-600">{entry.overtime_minutes}m OT</span>
+                      )}
+                      <div className="flex gap-1">
+                        {entry.breakfast_given && <span className="text-orange-600" title="Breakfast">🍳</span>}
+                        {entry.conveyance_given && <span className="text-blue-600" title="Conveyance">🚗</span>}
+                        {entry.dinner_given && <span className="text-purple-600" title="Dinner">🍽️</span>}
+                      </div>
                     </div>
                   </div>
                 ))}
