@@ -21,6 +21,7 @@ export default function Settings({ user, onLogout }) {
     grace_period_minutes: 15,
     working_days_per_week: 6,
     days_in_month: 30,
+    weekly_off_day: 'sunday',
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -233,6 +234,41 @@ export default function Settings({ user, onLogout }) {
                       className="h-12"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* NEW: Weekly Off Configuration */}
+              <div className="pt-6 border-t">
+                <h3 className="text-lg font-medium mb-4">Weekly Off Configuration</h3>
+                <div className="space-y-2">
+                  <Label>Company Weekly Off Day</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="weekly_off_day"
+                        value="saturday"
+                        checked={settings.weekly_off_day === 'saturday'}
+                        onChange={(e) => setSettings({ ...settings, weekly_off_day: e.target.value })}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Saturday</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="weekly_off_day"
+                        value="sunday"
+                        checked={settings.weekly_off_day === 'sunday'}
+                        onChange={(e) => setSettings({ ...settings, weekly_off_day: e.target.value })}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Sunday</span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-2">
+                    Selected day will automatically be treated as weekly off for all drivers. No duty-day deduction will be made.
+                  </p>
                 </div>
               </div>
 

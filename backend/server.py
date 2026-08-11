@@ -160,6 +160,8 @@ class DutyEntryResponse(BaseModel):
     admin_remarks: Optional[str] = None
     early_departure: bool = False
     early_departure_minutes: int = 0
+    edit_count: int = 0  # Track how many times edited
+    can_edit: bool = True  # Can driver still edit this?
     created_at: str
 
 class DutyApprovalUpdate(BaseModel):
@@ -258,6 +260,7 @@ class SettingsResponse(BaseModel):
     grace_period_minutes: int  # Grace period before overtime calculation
     working_days_per_week: int
     days_in_month: int
+    weekly_off_day: str  # 'saturday' or 'sunday'
 
 class SettingsUpdate(BaseModel):
     overtime_per_15min: Optional[float] = None
@@ -271,6 +274,7 @@ class SettingsUpdate(BaseModel):
     grace_period_minutes: Optional[int] = None
     working_days_per_week: Optional[int] = None
     days_in_month: Optional[int] = None
+    weekly_off_day: Optional[str] = None
 
 class PayrollResponse(BaseModel):
     driver_id: str
@@ -621,6 +625,8 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
         'admin_remarks': None,
         'early_departure': early_departure,
         'early_departure_minutes': early_departure_minutes,
+        'edit_count': 0,
+        'can_edit': True,
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     
@@ -649,18 +655,113 @@ async def list_duty_entries(
     
     entries = await db.duty_entries.find(query, {'_id': 0}).to_list(1000)
     
-    # Add driver names
+    # Add driver names and calculate can_edit
     driver_ids = list(set([e['driver_id'] for e in entries]))
     drivers = await db.drivers.find({'id': {'$in': driver_ids}}, {'_id': 0}).to_list(1000)
     driver_map = {d['id']: d['full_name'] for d in drivers}
     
+    today = date.today()
     result = []
     for entry in entries:
+        # Calculate if driver can still edit (within 2 days and edit_count < 1)
+        entry_date = date.fromisoformat(entry['date'])
+        days_since_entry = (today - entry_date).days
+        can_edit = (
+            entry.get('edit_count', 0) < 1 and 
+            days_since_entry <= 2 and 
+            entry.get('approval_status') == 'pending'
+        )
+        entry['can_edit'] = can_edit
+        
         resp = DutyEntryResponse(**entry)
         resp.driver_name = driver_map.get(entry['driver_id'])
         result.append(resp)
     
     return result
+
+@api_router.put('/duty-entries/{entry_id}/driver-edit', response_model=DutyEntryResponse)
+async def driver_edit_duty_entry(entry_id: str, entry_data: DutyEntryUpdate, user: dict = Depends(get_current_user)):
+    """Driver can edit their own entry once within 2 days"""
+    # Get existing entry
+    entry = await db.duty_entries.find_one({'id': entry_id}, {'_id': 0})
+    if not entry:
+        raise HTTPException(status_code=404, detail='Duty entry not found')
+    
+    # Verify it's the driver's own entry
+    driver = await db.drivers.find_one({'user_id': user['id']}, {'_id': 0})
+    if not driver or driver['id'] != entry['driver_id']:
+        raise HTTPException(status_code=403, detail='You can only edit your own entries')
+    
+    # Check edit rules
+    edit_count = entry.get('edit_count', 0)
+    if edit_count >= 1:
+        raise HTTPException(status_code=400, detail='This entry has already been edited once')
+    
+    # Check if within 2 days
+    entry_date = date.fromisoformat(entry['date'])
+    days_since_entry = (date.today() - entry_date).days
+    if days_since_entry > 2:
+        raise HTTPException(status_code=400, detail='Edit window expired (entries can only be edited within 2 days)')
+    
+    # Check if still pending
+    if entry.get('approval_status') != 'pending':
+        raise HTTPException(status_code=400, detail='Cannot edit entries that have been approved or rejected')
+    
+    # Get settings
+    settings = await db.settings.find_one({}, {'_id': 0})
+    
+    # Update times if provided and recalculate
+    in_time = entry_data.in_time if entry_data.in_time else entry['in_time']
+    out_time = entry_data.out_time if entry_data.out_time else entry['out_time']
+    
+    # Validate: Details mandatory if overtime
+    details_calc = calculate_duty_details(in_time, out_time, driver['standard_hours'], settings)
+    new_details = entry_data.details if entry_data.details else entry.get('details')
+    if details_calc['overtime_minutes'] > 0 and not new_details:
+        raise HTTPException(status_code=400, detail='Details are mandatory when overtime is worked')
+    
+    # Check early departure
+    in_dt = datetime.fromisoformat(in_time)
+    out_dt = datetime.fromisoformat(out_time)
+    duration = out_dt - in_dt
+    hours_worked = duration.total_seconds() / 3600
+    early_departure = False
+    early_departure_minutes = 0
+    if hours_worked < driver['standard_hours']:
+        shortfall_hours = driver['standard_hours'] - hours_worked
+        shortfall_minutes = int(shortfall_hours * 60)
+        if shortfall_minutes > 30:
+            early_departure = True
+            early_departure_minutes = shortfall_minutes
+    
+    update_data = {
+        'in_time': in_time,
+        'out_time': out_time,
+        'hours_worked': details_calc['hours_worked'],
+        'overtime_minutes': details_calc['overtime_minutes'],
+        'conveyance_given': details_calc['conveyance_given'],
+        'dinner_given': details_calc['dinner_given'],
+        'breakfast_given': details_calc['breakfast_given'],
+        'early_departure': early_departure,
+        'early_departure_minutes': early_departure_minutes,
+        'edit_count': edit_count + 1,
+        'can_edit': False
+    }
+    
+    # Update optional fields if provided
+    if entry_data.details is not None:
+        update_data['details'] = entry_data.details
+    if entry_data.remark_type is not None:
+        update_data['remark_type'] = entry_data.remark_type
+    if entry_data.remark_text is not None:
+        update_data['remark_text'] = entry_data.remark_text
+    
+    await db.duty_entries.update_one({'id': entry_id}, {'$set': update_data})
+    
+    updated_entry = await db.duty_entries.find_one({'id': entry_id}, {'_id': 0})
+    response = DutyEntryResponse(**updated_entry)
+    response.driver_name = driver['full_name']
+    return response
 
 @api_router.put('/duty-entries/{entry_id}', response_model=DutyEntryResponse)
 async def update_duty_entry(entry_id: str, entry_data: DutyEntryUpdate, user: dict = Depends(get_admin_user)):
@@ -782,7 +883,8 @@ async def get_settings(user: dict = Depends(get_current_user)):
             'breakfast_trigger_before_time': '07:30',
             'grace_period_minutes': 15,
             'working_days_per_week': 6,
-            'days_in_month': 30
+            'days_in_month': 30,
+            'weekly_off_day': 'sunday'
         }
         await db.settings.insert_one(settings)
     return SettingsResponse(**settings)
