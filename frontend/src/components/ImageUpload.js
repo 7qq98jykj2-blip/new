@@ -1,32 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Camera, Upload, X } from 'lucide-react';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
 
-export default function ImageUpload({ label, value, onChange, required = false }) {
-  const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState(value || null);
-  const [showCamera, setShowCamera] = useState(false);
-  const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
+function ImageUpload({ label, value, onChange, required }) {
+  const [uploading, setUploading] = React.useState(false);
+  const [preview, setPreview] = React.useState(value || null);
+  const fileInputRef = React.useRef(null);
+  const cameraInputRef = React.useRef(null);
 
   const validateFile = (file) => {
-    // Check file type
     if (!file.type.match('image/(jpeg|jpg|png)')) {
       toast.error('Only JPG and PNG images are allowed');
       return false;
     }
-
-    // Check file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error('Image must be less than 2MB');
       return false;
     }
-
     return true;
   };
 
@@ -104,7 +97,6 @@ export default function ImageUpload({ label, value, onChange, required = false }
       ) : (
         <div className="space-y-2">
           <div className="flex gap-2">
-            {/* Camera Capture - Mobile Optimized */}
             <div className="flex-1">
               <input
                 ref={cameraInputRef}
@@ -127,7 +119,6 @@ export default function ImageUpload({ label, value, onChange, required = false }
               </Button>
             </div>
 
-            {/* Gallery Upload */}
             <div className="flex-1">
               <input
                 ref={fileInputRef}
@@ -164,3 +155,5 @@ export default function ImageUpload({ label, value, onChange, required = false }
     </div>
   );
 }
+
+export default ImageUpload;
