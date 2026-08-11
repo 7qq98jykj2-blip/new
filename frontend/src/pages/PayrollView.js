@@ -87,7 +87,7 @@ export default function PayrollView({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Salary Slip</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Salary Slip</h1>
           </div>
         </div>
       </header>
@@ -95,7 +95,7 @@ export default function PayrollView({ user, onLogout }) {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Info */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-semibold text-zinc-950 mb-2">SALARY SLIP</h2>
+          <h2 className="text-3xl font-semibold text-emerald-950 mb-2">SALARY SLIP</h2>
           <p className="text-zinc-600">{getMonthName(payrollData.month)} {payrollData.year}</p>
         </div>
 
@@ -108,19 +108,19 @@ export default function PayrollView({ user, onLogout }) {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-zinc-600 mb-1">Name</p>
-                <p className="text-zinc-950 font-medium">{payrollData.driver_name}</p>
+                <p className="text-emerald-950 font-medium">{payrollData.driver_name}</p>
               </div>
               <div>
                 <p className="text-zinc-600 mb-1">Phone</p>
-                <p className="text-zinc-950 font-medium">{driverInfo.phone}</p>
+                <p className="text-emerald-950 font-medium">{driverInfo.phone}</p>
               </div>
               <div>
                 <p className="text-zinc-600 mb-1">Aadhaar Number</p>
-                <p className="text-zinc-950 font-medium mono">{driverInfo.aadhaar_number}</p>
+                <p className="text-emerald-950 font-medium mono">{driverInfo.aadhaar_number}</p>
               </div>
               <div>
                 <p className="text-zinc-600 mb-1">Job Start Date</p>
-                <p className="text-zinc-950 font-medium">{driverInfo.job_start_date}</p>
+                <p className="text-emerald-950 font-medium">{driverInfo.job_start_date}</p>
               </div>
             </div>
           </CardContent>
@@ -135,19 +135,19 @@ export default function PayrollView({ user, onLogout }) {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Base Monthly Salary</span>
-                <span className="text-zinc-950 font-medium mono">₹{payrollData.base_salary.toLocaleString('en-IN')}</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.base_salary.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Overtime Pay</span>
-                <span className="text-zinc-950 font-medium mono">₹{payrollData.total_overtime_amount.toLocaleString('en-IN')}</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_overtime_amount.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Food Allowances</span>
-                <span className="text-zinc-950 font-medium mono">₹{payrollData.total_food_allowances.toLocaleString('en-IN')}</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_food_allowances.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Miscellaneous Expenses</span>
-                <span className="text-zinc-950 font-medium mono">₹{payrollData.total_expenses.toLocaleString('en-IN')}</span>
+                <span className="text-emerald-950 font-medium mono">₹{payrollData.total_expenses.toLocaleString('en-IN')}</span>
               </div>
               {payrollData.deductions > 0 && (
                 <div className="flex justify-between items-center py-2 border-b border-zinc-200">
@@ -156,8 +156,8 @@ export default function PayrollView({ user, onLogout }) {
                 </div>
               )}
               <div className="flex justify-between items-center py-4 bg-zinc-50 -mx-6 px-6 rounded-md">
-                <span className="text-lg font-semibold text-zinc-950">Net Pay</span>
-                <span className="text-2xl font-bold text-zinc-950 mono">₹{payrollData.net_pay.toLocaleString('en-IN')}</span>
+                <span className="text-lg font-semibold text-emerald-950">Net Pay</span>
+                <span className="text-2xl font-bold text-emerald-950 mono">₹{payrollData.net_pay.toLocaleString('en-IN')}</span>
               </div>
             </div>
           </CardContent>
@@ -204,7 +204,7 @@ export default function PayrollView({ user, onLogout }) {
                       <p className="text-zinc-900 font-medium">{expense.description}</p>
                       <p className="text-xs text-zinc-500">{expense.date} • {expense.category}</p>
                     </div>
-                    <span className="text-zinc-950 font-medium mono">₹{expense.amount.toLocaleString('en-IN')}</span>
+                    <span className="text-emerald-950 font-medium mono">₹{expense.amount.toLocaleString('en-IN')}</span>
                   </div>
                 ))}
               </div>
@@ -217,7 +217,7 @@ export default function PayrollView({ user, onLogout }) {
           <Button
             data-testid="download-pdf-button"
             onClick={handleDownloadPDF}
-            className="flex-1 h-12 bg-zinc-900 hover:bg-zinc-800"
+            className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700"
           >
             <Download className="w-4 h-4 mr-2" />
             Download PDF

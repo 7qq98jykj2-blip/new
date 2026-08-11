@@ -88,11 +88,11 @@ export default function LeaveManagement({ user, onLogout }) {
               <Button onClick={() => navigate('/admin')} variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
-              <h1 className="text-xl font-semibold text-zinc-950">Leave Management</h1>
+              <h1 className="text-xl font-semibold text-emerald-950">Leave Management</h1>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-zinc-900 hover:bg-zinc-800">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
                   <Plus className="w-4 h-4 mr-2" />
                   Mark Leave
                 </Button>
@@ -143,7 +143,7 @@ export default function LeaveManagement({ user, onLogout }) {
                     <p className="font-medium text-zinc-900 mb-1">Pro-rata deduction</p>
                     <p className="text-xs">Deduction will be calculated based on daily salary (Base salary ÷ 30 days)</p>
                   </div>
-                  <Button type="submit" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800">
+                  <Button type="submit" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
                     Mark Leave
                   </Button>
                 </form>

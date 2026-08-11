@@ -47,7 +47,7 @@ export default function Login({ onLogin }) {
           <div className="w-12 h-12 bg-zinc-900 rounded-md flex items-center justify-center mb-3">
             <Truck className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">Taurani Staff</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-emerald-950">Taurani Staff</h1>
           <p className="text-sm text-zinc-600 mt-1">Driver Duty & Payroll Management</p>
         </div>
 
@@ -89,7 +89,7 @@ export default function Login({ onLogin }) {
               <Button
                 data-testid="login-submit-button"
                 type="submit"
-                className="w-full h-12 bg-zinc-900 hover:bg-zinc-800"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
                 disabled={loading}
               >
                 {loading ? 'Signing in...' : 'Sign In'}

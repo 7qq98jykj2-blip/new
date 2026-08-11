@@ -54,7 +54,7 @@ export default function AdminDashboard({ user, onLogout }) {
       <header className="border-b border-zinc-200 bg-white sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-zinc-950">Taurani Staff Admin</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Taurani Staff Admin</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-zinc-600">{user.name}</span>
               <Button
@@ -84,7 +84,7 @@ export default function AdminDashboard({ user, onLogout }) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold text-zinc-950 mono">
+              <div className="text-3xl font-semibold text-emerald-950 mono">
                 {loading ? '...' : stats?.total_drivers || 0}
               </div>
             </CardContent>
@@ -98,7 +98,7 @@ export default function AdminDashboard({ user, onLogout }) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold text-zinc-950 mono">
+              <div className="text-3xl font-semibold text-emerald-950 mono">
                 ₹{loading ? '...' : (stats?.current_month_payroll || 0).toLocaleString('en-IN')}
               </div>
             </CardContent>
@@ -112,7 +112,7 @@ export default function AdminDashboard({ user, onLogout }) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold text-zinc-950 mono">
+              <div className="text-3xl font-semibold text-emerald-950 mono">
                 {loading ? '...' : stats?.today_entries || 0}
               </div>
             </CardContent>

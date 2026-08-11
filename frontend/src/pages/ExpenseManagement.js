@@ -118,7 +118,7 @@ export default function ExpenseManagement({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Expense Management</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Expense Management</h1>
           </div>
         </div>
       </header>
@@ -178,7 +178,7 @@ export default function ExpenseManagement({ user, onLogout }) {
                 <Label>&nbsp;</Label>
                 <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
                   <DialogTrigger asChild>
-                    <Button data-testid="add-expense-button" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800">
+                    <Button data-testid="add-expense-button" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Expense
                     </Button>
@@ -252,7 +252,7 @@ export default function ExpenseManagement({ user, onLogout }) {
                           className="h-12"
                         />
                       </div>
-                      <Button data-testid="expense-form-submit" type="submit" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800">
+                      <Button data-testid="expense-form-submit" type="submit" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
                         Add Expense
                       </Button>
                     </form>
@@ -268,7 +268,7 @@ export default function ExpenseManagement({ user, onLogout }) {
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-sm text-zinc-600 mb-1">Total Expenses</p>
-              <p className="text-3xl font-semibold text-zinc-950 mono">₹{getTotalExpenses().toLocaleString('en-IN')}</p>
+              <p className="text-3xl font-semibold text-emerald-950 mono">₹{getTotalExpenses().toLocaleString('en-IN')}</p>
             </div>
           </CardContent>
         </Card>

@@ -77,7 +77,7 @@ export default function BonusesManagement({ user, onLogout }) {
       all: 'bg-zinc-100 text-zinc-700',
       yearly: 'bg-purple-100 text-purple-700',
       monthly: 'bg-blue-100 text-blue-700',
-      incentive: 'bg-green-100 text-green-700'
+      incentive: 'bg-emerald-100 text-emerald-700'
     };
     return colors[type] || colors.all;
   };
@@ -91,11 +91,11 @@ export default function BonusesManagement({ user, onLogout }) {
               <Button onClick={() => navigate('/admin')} variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
-              <h1 className="text-xl font-semibold text-zinc-950">Bonuses Management</h1>
+              <h1 className="text-xl font-semibold text-emerald-950">Bonuses Management</h1>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-zinc-900 hover:bg-zinc-800">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Bonus
                 </Button>
@@ -169,7 +169,7 @@ export default function BonusesManagement({ user, onLogout }) {
                       placeholder="e.g., Diwali bonus, Performance incentive"
                     />
                   </div>
-                  <Button type="submit" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800">
+                  <Button type="submit" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
                     Add Bonus
                   </Button>
                 </form>

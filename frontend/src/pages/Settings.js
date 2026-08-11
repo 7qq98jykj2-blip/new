@@ -65,7 +65,7 @@ export default function Settings({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Settings</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Settings</h1>
           </div>
         </div>
       </header>
@@ -275,7 +275,7 @@ export default function Settings({ user, onLogout }) {
               <Button
                 data-testid="save-settings-button"
                 type="submit"
-                className="w-full h-12 bg-zinc-900 hover:bg-zinc-800"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
                 disabled={loading}
               >
                 <Save className="w-4 h-4 mr-2" />

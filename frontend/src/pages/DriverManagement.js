@@ -154,7 +154,7 @@ export default function DriverManagement({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Driver Management</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Driver Management</h1>
           </div>
         </div>
       </header>
@@ -164,7 +164,7 @@ export default function DriverManagement({ user, onLogout }) {
           <h2 className="text-2xl font-medium">Drivers</h2>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button data-testid="add-driver-button" className="bg-zinc-900 hover:bg-zinc-800">
+              <Button data-testid="add-driver-button" className="bg-emerald-600 hover:bg-emerald-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Driver
               </Button>
@@ -394,7 +394,7 @@ export default function DriverManagement({ user, onLogout }) {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="submit" data-testid="driver-form-submit" className="flex-1 bg-zinc-900 hover:bg-zinc-800">
+                  <Button type="submit" data-testid="driver-form-submit" className="flex-1 bg-emerald-600 hover:bg-emerald-700">
                     {editingDriver ? 'Update Driver' : 'Create Driver'}
                   </Button>
                   <Button

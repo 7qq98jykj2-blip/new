@@ -107,7 +107,7 @@ export default function DutyRecords({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Duty Records</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Duty Records</h1>
           </div>
         </div>
       </header>
@@ -204,7 +204,7 @@ export default function DutyRecords({ user, onLogout }) {
                         <td className="p-4 text-zinc-900 mono">{entry.hours_worked}h</td>
                         <td className="p-4 text-zinc-900 mono">{entry.overtime_minutes}m</td>
                         <td className="p-4">
-                          <span className={`text-xs px-2 py-1 rounded ${entry.food_allowance_given ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-600'}`}>
+                          <span className={`text-xs px-2 py-1 rounded ${entry.food_allowance_given ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}`}>
                             {entry.food_allowance_given ? 'Yes' : 'No'}
                           </span>
                         </td>
@@ -275,7 +275,7 @@ export default function DutyRecords({ user, onLogout }) {
                 />
               </div>
             </div>
-            <Button data-testid="update-entry-button" type="submit" className="w-full h-12 bg-zinc-900 hover:bg-zinc-800">
+            <Button data-testid="update-entry-button" type="submit" className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
               Update Entry
             </Button>
           </form>

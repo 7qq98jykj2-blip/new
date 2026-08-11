@@ -121,7 +121,7 @@ export default function DutyApproval({ user, onLogout }) {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-semibold text-zinc-950">Duty Approvals</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Duty Approvals</h1>
           </div>
         </div>
       </header>
@@ -147,7 +147,7 @@ export default function DutyApproval({ user, onLogout }) {
                       <Button
                         onClick={() => handleBulkApproval('approved')}
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-emerald-600 hover:bg-emerald-700"
                       >
                         <Check className="w-4 h-4 mr-1" />
                         Approve ({selectedIds.length})
@@ -191,18 +191,18 @@ export default function DutyApproval({ user, onLogout }) {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-zinc-950">{entry.driver_name}</h3>
+                          <h3 className="font-semibold text-emerald-950">{entry.driver_name}</h3>
                           <p className="text-sm text-zinc-600 mt-1">Date: {entry.date}</p>
                           <p className="text-sm text-zinc-600">
                             {new Date(entry.in_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} - 
                             {new Date(entry.out_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                           <div className="mt-2 text-sm">
-                            <span className="text-zinc-950 font-medium">Hours: </span>
+                            <span className="text-emerald-950 font-medium">Hours: </span>
                             <span className="mono">{entry.hours_worked}h</span>
                             {entry.overtime_minutes > 0 && (
                               <span className="ml-3">
-                                <span className="text-zinc-950 font-medium">OT: </span>
+                                <span className="text-emerald-950 font-medium">OT: </span>
                                 <span className="mono text-orange-600">{entry.overtime_minutes}m</span>
                               </span>
                             )}
@@ -266,7 +266,7 @@ export default function DutyApproval({ user, onLogout }) {
                         <Button
                           onClick={() => handleApproval(entry.id, 'approved')}
                           size="sm"
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-emerald-600 hover:bg-emerald-700"
                         >
                           <Check className="w-4 h-4 mr-1" />
                           Approve
@@ -351,7 +351,7 @@ export default function DutyApproval({ user, onLogout }) {
               <div className="flex gap-2 pt-4">
                 <Button
                   onClick={() => handleSaveEdits('approved')}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                 >
                   <Check className="w-4 h-4 mr-2" />
                   Approve with Changes

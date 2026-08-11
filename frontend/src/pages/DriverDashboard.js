@@ -172,7 +172,7 @@ export default function DriverDashboard({ user, onLogout }) {
       <header className="border-b border-zinc-200 bg-white sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-zinc-950">Taurani Staff Driver</h1>
+            <h1 className="text-xl font-semibold text-emerald-950">Taurani Staff Driver</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-zinc-600">{user.name}</span>
               <Button onClick={onLogout} variant="outline" size="sm" className="h-9">
@@ -296,7 +296,7 @@ export default function DriverDashboard({ user, onLogout }) {
                 )}
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full h-12 bg-zinc-950 hover:bg-zinc-800">
+              <Button type="submit" disabled={loading} className="w-full h-12 bg-emerald-600 hover:bg-emerald-700">
                 {loading ? 'Submitting...' : 'Submit Duty Entry'}
               </Button>
             </form>
@@ -317,7 +317,7 @@ export default function DriverDashboard({ user, onLogout }) {
                   <div key={entry.id} className="p-4 border border-zinc-200 rounded-md">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-zinc-950">{entry.date}</p>
+                        <p className="font-medium text-emerald-950">{entry.date}</p>
                         <p className="text-sm text-zinc-600 mt-1">
                           {new Date(entry.in_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} - 
                           {new Date(entry.out_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
@@ -335,7 +335,7 @@ export default function DriverDashboard({ user, onLogout }) {
                       </div>
                       <div className="flex gap-2 items-start">
                         <span className={`px-3 py-1 rounded text-xs font-medium ${
-                          entry.approval_status === 'approved' ? 'bg-green-100 text-green-700' :
+                          entry.approval_status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                           entry.approval_status === 'rejected' ? 'bg-red-100 text-red-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
@@ -373,7 +373,7 @@ export default function DriverDashboard({ user, onLogout }) {
               <div className="p-3 bg-zinc-50 rounded">
                 <p className="text-sm font-medium">{viewingEntry.date}</p>
                 <span className={`inline-block mt-1 px-2 py-1 rounded text-xs ${
-                  viewingEntry.approval_status === 'approved' ? 'bg-green-100 text-green-700' :
+                  viewingEntry.approval_status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                   viewingEntry.approval_status === 'rejected' ? 'bg-red-100 text-red-700' :
                   'bg-yellow-100 text-yellow-700'
                 }`}>
@@ -398,7 +398,7 @@ export default function DriverDashboard({ user, onLogout }) {
                     <Textarea value={editDetails} onChange={(e) => setEditDetails(e.target.value)} rows={3} className="mt-1" />
                   </div>
                   <div className="flex gap-2 pt-4">
-                    <Button onClick={handleSaveEdit} disabled={loading} className="flex-1 bg-zinc-950 hover:bg-zinc-800">
+                    <Button onClick={handleSaveEdit} disabled={loading} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
                       Save Changes
                     </Button>
                     <Button onClick={() => { setViewingEntry(null); setIsEditing(false); }} variant="outline" className="flex-1">
