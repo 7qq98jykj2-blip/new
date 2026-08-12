@@ -1,0 +1,39 @@
+{
+  "summary": "Phase 2 (Taurani Staff) tested end-to-end. Backend: work_status (all 5 values) accepted; outstation-without-city rejected; misc-expenses rejects travel/food and accepts parking; FY endpoint returns April-March structure; admin correction endpoint saves audit trail to payroll_audit_logs with admin_user/driver_id/entry_date/field_changed/old_value/new_value/reason/corrected_at; payroll response includes holiday_worked_pay and weekly_off_worked_pay. Frontend: driver dashboard renders all 5 work status options and 12-hour AM/PM time picker (hh 01-12, mm 00-59, AM/PM); MyPayroll shows only 'Final Amount Paid' with no daily breakdown (role separation ok); FinancialYear renders FY 2026-27 with April..March months; MiscExpenses page loads with Add Expense button. One HIGH backend bug: GET /api/drivers/{driver_id}/attendance/{year}/{month} returns null - implementation is incomplete (no return statement), so MyAttendance page always shows 'No attendance records for this month'.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "Driver login (8888888888/driver123) and admin login (9999999999/admin123)",
+    "POST /api/duty-entries accepts work_status: present, vacation, outstation (with city), holiday_worked, weekly_off_worked",
+    "Outstation without outstation_city rejected with 400 'City is mandatory for outstation work'",
+    "POST /api/misc-expenses: parking accepted; food/travel rejected with 400 'Travel and Food expenses must use existing expense system'",
+    "GET /api/drivers/{id}/financial-year/{fy_year} returns FY April-March with 12 months + total_paid",
+    "PUT /api/duty-entries/{id}/correct saves entries to payroll_audit_logs; GET /api/audit-logs returns records with all required fields",
+    "GET /api/payroll/{id}/{y}/{m} exposes holiday_worked_pay and weekly_off_worked_pay",
+    "Driver Dashboard UI: Work Status dropdown with all 5 options, 12-hour AM/PM time picker rendered",
+    "Driver /driver/payroll UI shows only Final Amount Paid, no daily rates/breakdown (role separation verified)",
+    "Driver /driver/financial-year UI shows FY range April-March with month rows",
+    "Driver /driver/expenses (Misc Expenses) page loads"
+  ],
+  "failed": [
+    {
+      "area": "backend",
+      "issue": "GET /api/drivers/{driver_id}/attendance/{year}/{month} returns null. Handler in /app/backend/attendance_enhancements.py (lines 205-227) fetches entries/holidays/settings but has NO return statement - function ends silently.",
+      "evidence": "curl returns literal 'null'; frontend MyAttendance.js line 33 calls this endpoint and always renders 'No attendance records for this month' as shown in UI screenshot.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "data linkage",
+      "issue": "Driver user account (mobile 8888888888, user.id=b1983064...) is NOT linked to any record in the drivers collection. Rajesh Kumar (drivers.id=88dca182...) has the same mobile but different id. Duty entries created via the driver login require passing the drivers-collection id manually; if the DriverDashboard passes user.id as driver_id, POST /api/duty-entries returns 404 'Driver not found'.",
+      "evidence": "curl POST /api/duty-entries with driver_id=user.id -> 404. With drivers-collection id -> 201 OK.",
+      "priority": "HIGH"
+    }
+  ],
+  "action_items": [
+    "Fix /app/backend/attendance_enhancements.py get_monthly_attendance (line 205+): add logic to merge duty entries + holidays + weekly-off days and return a JSON list/dict; currently returns None.",
+    "Ensure driver user accounts are linked to a drivers-collection record (either by shared id or by storing driver_id on the user document). Otherwise duty-entry submission from the DriverDashboard will fail with 'Driver not found'. Verify what id DriverDashboard.js sends when submitting.",
+    "After fixing attendance endpoint, retest MyAttendance page to confirm work_status badges, outstation_city, and 12-hour times render."
+  ],
+  "success_rate": {"backend": "85%", "frontend": "90%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

@@ -325,7 +325,137 @@ export default function ExpenseManagement({ user, onLogout }) {
             )}
           </CardContent>
         </Card>
+
+        {/* Miscellaneous Expenses Section */}
+        <Card className="border-zinc-200 shadow-sm mt-6">
+          <CardHeader>
+            <CardTitle className="text-emerald-950">Miscellaneous Expenses (Parking, Tolls, etc.)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MiscExpensesList selectedDriver={selectedDriver} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+          </CardContent>
+        </Card>
       </main>
+    </div>
+  );
+}
+
+// Misc Expenses List Component
+function MiscExpensesList({ selectedDriver, selectedMonth, selectedYear }) {
+  const [miscExpenses, setMiscExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMiscExpenses();
+  }, [selectedDriver, selectedMonth, selectedYear]);
+
+  const fetchMiscExpenses = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/misc-expenses');
+      let filtered = res.data;
+      
+      // Filter by driver
+      if (selectedDriver !== 'all') {
+        filtered = filtered.filter(e => e.driver_id === selectedDriver);
+      }
+      
+      // Filter by month/year
+      if (selectedMonth && selectedYear) {
+        filtered = filtered.filter(e => {
+          const expenseDate = new Date(e.date);
+          return expenseDate.getMonth() + 1 === parseInt(selectedMonth) && 
+                 expenseDate.getFullYear() === parseInt(selectedYear);
+        });
+      }
+      
+      setMiscExpenses(filtered);
+    } catch (error) {
+      toast.error('Failed to fetch misc expenses');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (expenseId) => {
+    try {
+      await api.put(`/misc-expenses/${expenseId}/approve`, { status: 'approved' });
+      toast.success('Expense approved');
+      fetchMiscExpenses();
+    } catch (error) {
+      toast.error('Failed to approve expense');
+    }
+  };
+
+  const handleReject = async (expenseId) => {
+    try {
+      await api.put(`/misc-expenses/${expenseId}/approve`, { status: 'rejected' });
+      toast.success('Expense rejected');
+      fetchMiscExpenses();
+    } catch (error) {
+      toast.error('Failed to reject expense');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      pending: 'bg-yellow-100 text-yellow-700',
+      approved: 'bg-emerald-100 text-emerald-700',
+      rejected: 'bg-red-100 text-red-700'
+    };
+    return (
+      <span className={`px-2 py-1 rounded text-xs font-medium ${styles[status] || styles.pending}`}>
+        {status.toUpperCase()}
+      </span>
+    );
+  };
+
+  if (loading) return <p className="text-center py-4">Loading...</p>;
+  
+  if (miscExpenses.length === 0) {
+    return <p className="text-center py-8 text-zinc-500">No miscellaneous expenses for this period</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {miscExpenses.map((expense) => (
+        <div key={expense.id} className="border border-zinc-200 rounded-md p-4">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <p className="font-medium text-emerald-950">{expense.driver_name || expense.driver_id}</p>
+                <span className="text-sm text-zinc-500">•</span>
+                <p className="text-sm text-zinc-600">{expense.date}</p>
+                <span className="text-sm text-zinc-500">•</span>
+                <p className="text-sm font-medium text-zinc-700">{expense.category.toUpperCase()}</p>
+              </div>
+              <p className="text-sm text-zinc-700 mb-2">{expense.description}</p>
+              <p className="text-lg font-semibold text-emerald-600">₹{expense.amount.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              {getStatusBadge(expense.status)}
+              {expense.status === 'pending' && (
+                <div className="flex gap-2 mt-2">
+                  <Button 
+                    onClick={() => handleApprove(expense.id)}
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Approve
+                  </Button>
+                  <Button 
+                    onClick={() => handleReject(expense.id)}
+                    size="sm"
+                    variant="destructive"
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -12,6 +12,10 @@ import DutyApproval from './pages/DutyApproval';
 import AdvancesManagement from './pages/AdvancesManagement';
 import BonusesManagement from './pages/BonusesManagement';
 import LeaveManagement from './pages/LeaveManagement';
+import MyAttendance from './pages/MyAttendance';
+import MyPayroll from './pages/MyPayroll';
+import FinancialYear from './pages/FinancialYear';
+import MiscExpenses from './pages/MiscExpenses';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
@@ -96,6 +100,11 @@ function App() {
             path="/leaves"
             element={user && user.role === 'admin' ? <LeaveManagement user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
           />
+          <Route path="/driver" element={user && user.role === 'driver' ? <DriverDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/driver/attendance" element={user && user.role === 'driver' ? <MyAttendance user={user} /> : <Navigate to="/login" />} />
+          <Route path="/driver/payroll" element={user && user.role === 'driver' ? <MyPayroll user={user} /> : <Navigate to="/login" />} />
+          <Route path="/driver/financial-year" element={user && user.role === 'driver' ? <FinancialYear user={user} /> : <Navigate to="/login" />} />
+          <Route path="/driver/expenses" element={user && user.role === 'driver' ? <MiscExpenses user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/driver') : '/login'} />} />
         </Routes>
       </BrowserRouter>

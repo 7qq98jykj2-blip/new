@@ -158,6 +158,7 @@ async def get_financial_year_statement(driver_id: str, fy_year: int, user: dict 
     fy_year: 2026 means FY 2026-27 (April 2026 to March 2027)
     """
     from calendar import month_name
+    from server import calculate_payroll
     
     # Financial year months
     months_data = []
@@ -165,21 +166,31 @@ async def get_financial_year_statement(driver_id: str, fy_year: int, user: dict 
     
     # April to December of fy_year
     for month in range(4, 13):
-        # Get payroll for this month
-        payroll_endpoint = f"/payroll/{driver_id}/{fy_year}/{month}"
-        # In real implementation, call internal payroll function
-        # For now, placeholder
+        try:
+            payroll_data = await calculate_payroll(driver_id, fy_year, month, user)
+            amount = payroll_data.get('net_pay', 0.0)
+        except:
+            amount = 0.0
+        
         months_data.append(FinancialYearMonth(
             month=f"{month_name[month]} {fy_year}",
-            amount_paid=0.0
+            amount_paid=amount
         ))
+        total_paid += amount
     
     # January to March of fy_year+1
     for month in range(1, 4):
+        try:
+            payroll_data = await calculate_payroll(driver_id, fy_year+1, month, user)
+            amount = payroll_data.get('net_pay', 0.0)
+        except:
+            amount = 0.0
+        
         months_data.append(FinancialYearMonth(
             month=f"{month_name[month]} {fy_year+1}",
-            amount_paid=0.0
+            amount_paid=amount
         ))
+        total_paid += amount
     
     return FinancialYearResponse(
         financial_year=f"FY {fy_year}-{str(fy_year+1)[-2:]}",
@@ -214,6 +225,152 @@ async def get_monthly_attendance(driver_id: str, year: int, month: int, user: di
     
     # Get settings for weekly off
     settings = await db.settings.find_one({}, {'_id': 0})
+
+    weekly_off_day = settings.get('weekly_off_day', 'sunday') if settings else 'sunday'
+    
+    return {
+        'driver_id': driver_id,
+        'year': year,
+        'month': month,
+        'entries': entries,
+        'holidays': holiday_dates,
+        'weekly_off_day': weekly_off_day
+    }
+
+
+# ============ ADMIN PAYROLL CORRECTION & AUDIT TRAIL ============
+
+class PayrollCorrectionRequest(BaseModel):
+    work_status: Optional[str] = None
+    outstation_city: Optional[str] = None
+    in_time: Optional[str] = None
+    out_time: Optional[str] = None
+    reason: str
+
+class AuditLogResponse(BaseModel):
+    id: str
+    admin_user: str
+    driver_id: str
+    entry_date: str
+    field_changed: str
+    old_value: str
+    new_value: str
+    reason: str
+    corrected_at: str
+
+@router.put('/duty-entries/{entry_id}/correct')
+async def correct_duty_entry(entry_id: str, correction: PayrollCorrectionRequest, user: dict = Depends(get_admin_user)):
+    """Admin correction of duty entry with audit trail"""
+    
+    # Get existing entry
+    entry = await db.duty_entries.find_one({'id': entry_id}, {'_id': 0})
+    if not entry:
+        raise HTTPException(status_code=404, detail='Duty entry not found')
+    
+    # Build update document and audit logs
+    update_doc = {}
+    audit_logs = []
+    
+    if correction.work_status is not None and correction.work_status != entry.get('work_status'):
+        old_val = entry.get('work_status', 'present')
+        update_doc['work_status'] = correction.work_status
+        audit_logs.append({
+            'id': str(uuid4()),
+            'admin_user': user.get('mobile', user.get('username', 'admin')),
+            'driver_id': entry['driver_id'],
+            'entry_date': entry['date'],
+            'field_changed': 'work_status',
+            'old_value': old_val,
+            'new_value': correction.work_status,
+            'reason': correction.reason,
+            'corrected_at': datetime.now(timezone.utc).isoformat()
+        })
+    
+    if correction.outstation_city is not None and correction.outstation_city != entry.get('outstation_city'):
+        old_val = entry.get('outstation_city') or ''
+        update_doc['outstation_city'] = correction.outstation_city
+        audit_logs.append({
+            'id': str(uuid4()),
+            'admin_user': user.get('mobile', user.get('username', 'admin')),
+            'driver_id': entry['driver_id'],
+            'entry_date': entry['date'],
+            'field_changed': 'outstation_city',
+            'old_value': old_val,
+            'new_value': correction.outstation_city,
+            'reason': correction.reason,
+            'corrected_at': datetime.now(timezone.utc).isoformat()
+        })
+    
+    if correction.in_time is not None and correction.in_time != entry.get('in_time'):
+        old_val = entry.get('in_time', '')
+        update_doc['in_time'] = correction.in_time
+        audit_logs.append({
+            'id': str(uuid4()),
+            'admin_user': user.get('mobile', user.get('username', 'admin')),
+            'driver_id': entry['driver_id'],
+            'entry_date': entry['date'],
+            'field_changed': 'in_time',
+            'old_value': old_val,
+            'new_value': correction.in_time,
+            'reason': correction.reason,
+            'corrected_at': datetime.now(timezone.utc).isoformat()
+        })
+    
+    if correction.out_time is not None and correction.out_time != entry.get('out_time'):
+        old_val = entry.get('out_time', '')
+        update_doc['out_time'] = correction.out_time
+        audit_logs.append({
+            'id': str(uuid4()),
+            'admin_user': user.get('mobile', user.get('username', 'admin')),
+            'driver_id': entry['driver_id'],
+            'entry_date': entry['date'],
+            'field_changed': 'out_time',
+            'old_value': old_val,
+            'new_value': correction.out_time,
+            'reason': correction.reason,
+            'corrected_at': datetime.now(timezone.utc).isoformat()
+        })
+    
+    if not update_doc:
+        raise HTTPException(status_code=400, detail='No changes detected')
+    
+    # Update duty entry
+    await db.duty_entries.update_one(
+        {'id': entry_id},
+        {'$set': update_doc}
+    )
+    
+    # Insert audit logs
+    if audit_logs:
+        await db.payroll_audit_logs.insert_many(audit_logs)
+    
+    return {'message': 'Duty entry corrected successfully', 'audit_logs_created': len(audit_logs)}
+
+@router.get('/audit-logs', response_model=List[AuditLogResponse])
+async def get_audit_logs(driver_id: Optional[str] = None, user: dict = Depends(get_admin_user)):
+    """Get payroll correction audit logs"""
+    query = {}
+    if driver_id:
+        query['driver_id'] = driver_id
+    
+    logs = await db.payroll_audit_logs.find(query, {'_id': 0}).sort('corrected_at', -1).to_list(500)
+    return [AuditLogResponse(**log) for log in logs]
+
+@router.get('/duty-entries/{entry_id}/audit-logs', response_model=List[AuditLogResponse])
+async def get_entry_audit_logs(entry_id: str, user: dict = Depends(get_current_user)):
+    """Get audit logs for a specific duty entry"""
+    # Get entry to find its date
+    entry = await db.duty_entries.find_one({'id': entry_id}, {'_id': 0})
+    if not entry:
+        raise HTTPException(status_code=404, detail='Duty entry not found')
+    
+    logs = await db.payroll_audit_logs.find({
+        'driver_id': entry['driver_id'],
+        'entry_date': entry['date']
+    }, {'_id': 0}).sort('corrected_at', -1).to_list(100)
+    
+    return [AuditLogResponse(**log) for log in logs]
+
     weekly_off_day = settings.get('weekly_off_day', 'sunday') if settings else 'sunday'
     
     return {

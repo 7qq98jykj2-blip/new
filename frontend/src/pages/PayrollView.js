@@ -141,6 +141,18 @@ export default function PayrollView({ user, onLogout }) {
                 <span className="text-zinc-900">Overtime Pay</span>
                 <span className="text-emerald-950 font-medium mono">₹{payrollData.total_overtime_amount.toLocaleString('en-IN')}</span>
               </div>
+              {payrollData.holiday_worked_pay > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                  <span className="text-zinc-900">Holiday Worked Additional Pay</span>
+                  <span className="text-emerald-950 font-medium mono">₹{payrollData.holiday_worked_pay.toLocaleString('en-IN')}</span>
+                </div>
+              )}
+              {payrollData.weekly_off_worked_pay > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-zinc-200">
+                  <span className="text-zinc-900">Weekly Off Worked Additional Pay</span>
+                  <span className="text-emerald-950 font-medium mono">₹{payrollData.weekly_off_worked_pay.toLocaleString('en-IN')}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-2 border-b border-zinc-200">
                 <span className="text-zinc-900">Conveyance</span>
                 <span className="text-emerald-950 font-medium mono">₹{payrollData.total_conveyance.toLocaleString('en-IN')}</span>
@@ -193,36 +205,106 @@ export default function PayrollView({ user, onLogout }) {
           </CardContent>
         </Card>
 
-        {/* Duty Summary */}
-        <Card data-testid="duty-summary-card" className="border-zinc-200 shadow-sm mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Duty Summary ({payrollData.duty_entries.length} days)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {payrollData.duty_entries.length === 0 ? (
-              <p className="text-sm text-zinc-500 text-center py-4">No duty entries for this month</p>
-            ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {payrollData.duty_entries.map((entry, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 border border-zinc-200 rounded-md text-sm">
-                    <span className="text-zinc-900">{entry.date}</span>
-                    <div className="flex gap-4 text-zinc-600">
-                      <span className="mono">{entry.hours_worked}h worked</span>
-                      {entry.overtime_minutes > 0 && (
-                        <span className="mono text-orange-600">{entry.overtime_minutes}m OT</span>
-                      )}
-                      <div className="flex gap-1">
-                        {entry.breakfast_given && <span className="text-orange-600" title="Breakfast">🍳</span>}
-                        {entry.conveyance_given && <span className="text-blue-600" title="Conveyance">🚗</span>}
-                        {entry.dinner_given && <span className="text-purple-600" title="Dinner">🍽️</span>}
+        {/* Day-by-Day Payroll Details (Admin Only) */}
+        {user.role === 'admin' && (
+          <Card data-testid="day-by-day-card" className="border-zinc-200 shadow-sm mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Day-by-Day Payroll Details ({payrollData.duty_entries.length} days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {payrollData.duty_entries.length === 0 ? (
+                <p className="text-sm text-zinc-500 text-center py-4">No duty entries for this month</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-2">Date</th>
+                        <th className="text-left py-2 px-2">Status</th>
+                        <th className="text-left py-2 px-2">City</th>
+                        <th className="text-left py-2 px-2">In Time</th>
+                        <th className="text-left py-2 px-2">Out Time</th>
+                        <th className="text-left py-2 px-2">Hours</th>
+                        <th className="text-left py-2 px-2">OT</th>
+                        <th className="text-left py-2 px-2">Allowances</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payrollData.duty_entries.map((entry, index) => (
+                        <tr key={index} className="border-b hover:bg-zinc-50">
+                          <td className="py-2 px-2">{entry.date}</td>
+                          <td className="py-2 px-2">
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              entry.work_status === 'vacation' ? 'bg-blue-100 text-blue-700' :
+                              entry.work_status === 'holiday_worked' ? 'bg-orange-100 text-orange-700' :
+                              entry.work_status === 'weekly_off_worked' ? 'bg-purple-100 text-purple-700' :
+                              entry.work_status === 'outstation' ? 'bg-teal-100 text-teal-700' :
+                              'bg-emerald-100 text-emerald-700'
+                            }`}>
+                              {entry.work_status === 'holiday_worked' ? 'Holiday Worked' :
+                               entry.work_status === 'weekly_off_worked' ? 'Weekly Off Worked' :
+                               entry.work_status === 'vacation' ? 'Vacation' :
+                               entry.work_status === 'outstation' ? 'Outstation' : 'Present'}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2 text-xs">{entry.outstation_city || '—'}</td>
+                          <td className="py-2 px-2 text-xs mono">{entry.in_time ? new Date(entry.in_time).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true}) : '—'}</td>
+                          <td className="py-2 px-2 text-xs mono">{entry.out_time ? new Date(entry.out_time).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true}) : '—'}</td>
+                          <td className="py-2 px-2 mono">{entry.hours_worked}h</td>
+                          <td className="py-2 px-2 mono">
+                            {entry.overtime_minutes > 0 ? (
+                              <span className="text-orange-600">{entry.overtime_minutes}m</span>
+                            ) : '—'}
+                          </td>
+                          <td className="py-2 px-2">
+                            <div className="flex gap-1 text-xs">
+                              {entry.breakfast_given && <span title="Breakfast">🍳</span>}
+                              {entry.conveyance_given && <span title="Conveyance">🚗</span>}
+                              {entry.dinner_given && <span title="Dinner">🍽️</span>}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Duty Summary (Driver View) */}
+        {user.role === 'driver' && (
+          <Card data-testid="duty-summary-card" className="border-zinc-200 shadow-sm mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Duty Summary ({payrollData.duty_entries.length} days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {payrollData.duty_entries.length === 0 ? (
+                <p className="text-sm text-zinc-500 text-center py-4">No duty entries for this month</p>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {payrollData.duty_entries.map((entry, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 border border-zinc-200 rounded-md text-sm">
+                      <span className="text-zinc-900">{entry.date}</span>
+                      <div className="flex gap-4 text-zinc-600">
+                        <span className="mono">{entry.hours_worked}h worked</span>
+                        {entry.overtime_minutes > 0 && (
+                          <span className="mono text-orange-600">{entry.overtime_minutes}m OT</span>
+                        )}
+                        <div className="flex gap-1">
+                          {entry.breakfast_given && <span className="text-orange-600" title="Breakfast">🍳</span>}
+                          {entry.conveyance_given && <span className="text-blue-600" title="Conveyance">🚗</span>}
+                          {entry.dinner_given && <span className="text-purple-600" title="Dinner">🍽️</span>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Expenses */}
         {payrollData.expenses.length > 0 && (

@@ -1,0 +1,30 @@
+{
+  "summary": "Driver portal Phase 2 tested end-to-end. Login, dashboard with work status selector (all 5 options), 12-hour time picker (Hour/Minute/AM-PM), outstation city field (mandatory), My Attendance monthly view with 12-hour formatting, My Payroll showing only final amount (no daily breakdown), and Financial Year statement (April-March, FY 2026-27) all working correctly.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "Driver login (8888888888/driver123) redirects to /driver dashboard",
+    "Work Status selector present with all 5 options: present, vacation, outstation, holiday_worked, weekly_off_worked",
+    "Outstation city input appears conditionally when 'outstation' selected and has HTML5 required + JS validation in handleSubmit",
+    "12-hour time picker verified: 12 hour options (01-12), 60 minute options, AM/PM period selector for both In Time and Out Time",
+    "My Attendance page loads with correct headers: Date | Status | City | Login | Logout",
+    "Attendance shows times in 12-hour format (10:00 AM / 11:00 PM) and status badge (Present)",
+    "My Payroll page displays only final monthly amount (₹25,000 - Final Amount Paid) with no daily breakdown",
+    "Financial Year page shows April-March FY structure (FY 2026-27: 2026-04-01 to 2027-03-31, listing April 2026 through March 2027)",
+    "Navigation buttons on dashboard (My Attendance, My Payroll) work; back navigation works",
+    "No 'daily payout' or per-day amounts visible anywhere in driver views"
+  ],
+  "failed": [
+    {
+      "area": "Console/DOM",
+      "issue": "React hydration warnings: <span> as child of <select>, <tbody>, <tr>. Caused by visual-editor injected span wrappers (data-ve-dynamic) around option/tr elements. Non-blocking but pollutes console and could cause hydration issues in strict SSR.",
+      "evidence": "Multiple console errors: 'In HTML, <span> cannot be a child of <select>/<tbody>/<tr>. This will cause a hydration error.' on DriverDashboard, MyAttendance, MyPayroll, FinancialYear pages.",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Optional: Investigate visual-editor wrapper (data-ve-dynamic spans) injecting invalid HTML inside select/tbody/tr - non-blocking, but produces console noise."
+  ],
+  "success_rate": {"backend": "n/a (not tested this iteration)", "frontend": "100% (10/10 flows passed)"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

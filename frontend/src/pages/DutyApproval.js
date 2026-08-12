@@ -19,6 +19,12 @@ export default function DutyApproval({ user, onLogout }) {
   const [editOvertimeMinutes, setEditOvertimeMinutes] = useState(0);
   const [editRemarkText, setEditRemarkText] = useState('');
   const [editAdminRemarks, setEditAdminRemarks] = useState('');
+  const [correctingEntry, setCorrectingEntry] = useState(null);
+  const [correctionData, setCorrectionData] = useState({
+    work_status: '',
+    outstation_city: '',
+    reason: ''
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,6 +114,32 @@ export default function DutyApproval({ user, onLogout }) {
       toast.error('Failed to update entry');
     }
   };
+
+  const openCorrectionModal = (entry) => {
+    setCorrectingEntry(entry);
+    setCorrectionData({
+      work_status: entry.work_status || 'present',
+      outstation_city: entry.outstation_city || '',
+      reason: ''
+    });
+  };
+
+  const handleCorrection = async () => {
+    if (!correctionData.reason.trim()) {
+      toast.error('Correction reason is required');
+      return;
+    }
+
+    try {
+      await api.put(`/duty-entries/${correctingEntry.id}/correct`, correctionData);
+      toast.success('Duty entry corrected successfully');
+      setCorrectingEntry(null);
+      fetchPendingEntries();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to correct entry');
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -363,6 +395,78 @@ export default function DutyApproval({ user, onLogout }) {
                 >
                   <X className="w-4 h-4 mr-2" />
                   Reject
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Correction Modal */}
+      <Dialog open={!!correctingEntry} onOpenChange={() => setCorrectingEntry(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Correct Duty Entry</DialogTitle>
+          </DialogHeader>
+          {correctingEntry && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-zinc-600 mb-4">
+                  Correcting entry for: <strong>{correctingEntry.driver_name}</strong> on <strong>{correctingEntry.date}</strong>
+                </p>
+              </div>
+
+              <div>
+                <Label>Work Status</Label>
+                <select 
+                  value={correctionData.work_status}
+                  onChange={(e) => setCorrectionData({...correctionData, work_status: e.target.value})}
+                  className="w-full border border-zinc-300 rounded-md px-3 py-2 mt-1"
+                >
+                  <option value="present">Present / Normal Working</option>
+                  <option value="vacation">Vacation / Leave</option>
+                  <option value="outstation">Outstation</option>
+                  <option value="holiday_worked">Holiday Worked</option>
+                  <option value="weekly_off_worked">Weekly Off Worked / Extra Day</option>
+                </select>
+              </div>
+
+              {correctionData.work_status === 'outstation' && (
+                <div>
+                  <Label>Outstation City</Label>
+                  <Input 
+                    value={correctionData.outstation_city}
+                    onChange={(e) => setCorrectionData({...correctionData, outstation_city: e.target.value})}
+                    placeholder="Enter city name"
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label>Correction Reason <span className="text-red-600">*</span></Label>
+                <Textarea 
+                  value={correctionData.reason}
+                  onChange={(e) => setCorrectionData({...correctionData, reason: e.target.value})}
+                  placeholder="Explain why this correction is being made"
+                  rows={3}
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleCorrection}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  Save Correction
+                </Button>
+                <Button
+                  onClick={() => setCorrectingEntry(null)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
                 </Button>
               </div>
             </div>
