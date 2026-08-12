@@ -430,7 +430,17 @@ function MiscExpensesList({ selectedDriver, selectedMonth, selectedYear }) {
                 <p className="text-sm font-medium text-zinc-700">{expense.category.toUpperCase()}</p>
               </div>
               <p className="text-sm text-zinc-700 mb-2">{expense.description}</p>
-              <p className="text-lg font-semibold text-emerald-600">₹{expense.amount.toLocaleString('en-IN')}</p>
+              {expense.receipt_url && (
+                <a 
+                  href={expense.receipt_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-emerald-600 hover:text-emerald-700"
+                >
+                  📎 View Receipt
+                </a>
+              )}
+              <p className="text-lg font-semibold text-emerald-600 mt-2">₹{expense.amount.toLocaleString('en-IN')}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               {getStatusBadge(expense.status)}

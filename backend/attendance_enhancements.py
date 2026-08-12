@@ -169,7 +169,7 @@ async def get_financial_year_statement(driver_id: str, fy_year: int, user: dict 
         try:
             payroll_data = await calculate_payroll(driver_id, fy_year, month, user)
             amount = payroll_data.get('net_pay', 0.0)
-        except:
+        except Exception:
             amount = 0.0
         
         months_data.append(FinancialYearMonth(
@@ -183,7 +183,7 @@ async def get_financial_year_statement(driver_id: str, fy_year: int, user: dict 
         try:
             payroll_data = await calculate_payroll(driver_id, fy_year+1, month, user)
             amount = payroll_data.get('net_pay', 0.0)
-        except:
+        except Exception:
             amount = 0.0
         
         months_data.append(FinancialYearMonth(
@@ -225,7 +225,6 @@ async def get_monthly_attendance(driver_id: str, year: int, month: int, user: di
     
     # Get settings for weekly off
     settings = await db.settings.find_one({}, {'_id': 0})
-
     weekly_off_day = settings.get('weekly_off_day', 'sunday') if settings else 'sunday'
     
     return {

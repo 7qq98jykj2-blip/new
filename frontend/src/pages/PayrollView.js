@@ -2,16 +2,26 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { api } from '../utils/api';
 import { generateSalarySlipPDF, exportToExcel } from '../utils/pdfGenerator';
 import { toast } from 'sonner';
-import { ArrowLeft, Download, FileSpreadsheet } from 'lucide-react';
+import { ArrowLeft, Download, FileSpreadsheet, Edit } from 'lucide-react';
 
 export default function PayrollView({ user, onLogout }) {
   const { driverId, year, month } = useParams();
   const [payrollData, setPayrollData] = useState(null);
   const [driverInfo, setDriverInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [correctingEntry, setCorrectingEntry] = useState(null);
+  const [correctionData, setCorrectionData] = useState({
+    work_status: '',
+    outstation_city: '',
+    reason: ''
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +62,32 @@ export default function PayrollView({ user, onLogout }) {
       toast.success('Excel exported successfully');
     }
   };
+
+  const openCorrectionModal = (entry) => {
+    setCorrectingEntry(entry);
+    setCorrectionData({
+      work_status: entry.work_status || 'present',
+      outstation_city: entry.outstation_city || '',
+      reason: ''
+    });
+  };
+
+  const handleCorrection = async () => {
+    if (!correctionData.reason.trim()) {
+      toast.error('Correction reason is required');
+      return;
+    }
+
+    try {
+      await api.put(`/duty-entries/${correctingEntry.id}/correct`, correctionData);
+      toast.success('Entry corrected successfully. Payroll recalculated.');
+      setCorrectingEntry(null);
+      fetchPayrollData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to correct entry');
+    }
+  };
+
 
   const getMonthName = (monthNum) => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -227,6 +263,7 @@ export default function PayrollView({ user, onLogout }) {
                         <th className="text-left py-2 px-2">Hours</th>
                         <th className="text-left py-2 px-2">OT</th>
                         <th className="text-left py-2 px-2">Allowances</th>
+                        {user.role === 'admin' && <th className="text-left py-2 px-2">Actions</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -263,6 +300,18 @@ export default function PayrollView({ user, onLogout }) {
                               {entry.dinner_given && <span title="Dinner">🍽️</span>}
                             </div>
                           </td>
+                          {user.role === 'admin' && (
+                            <td className="py-2 px-2">
+                              <Button
+                                onClick={() => openCorrectionModal(entry)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-emerald-600 hover:text-emerald-700"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -356,6 +405,78 @@ export default function PayrollView({ user, onLogout }) {
           </p>
         </div>
       </main>
+
+      {/* Correction Modal */}
+      {user.role === 'admin' && (
+        <Dialog open={!!correctingEntry} onOpenChange={() => setCorrectingEntry(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Correct Duty Entry</DialogTitle>
+            </DialogHeader>
+            {correctingEntry && (
+              <div className="space-y-4">
+                <p className="text-sm text-zinc-600">
+                  Correcting entry for <strong>{correctingEntry.date}</strong>
+                </p>
+
+                <div>
+                  <Label>Work Status</Label>
+                  <select 
+                    value={correctionData.work_status}
+                    onChange={(e) => setCorrectionData({...correctionData, work_status: e.target.value})}
+                    className="w-full border border-zinc-300 rounded-md px-3 py-2 mt-1"
+                  >
+                    <option value="present">Present / Normal Working</option>
+                    <option value="vacation">Vacation / Leave</option>
+                    <option value="outstation">Outstation</option>
+                    <option value="holiday_worked">Holiday Worked</option>
+                    <option value="weekly_off_worked">Weekly Off Worked / Extra Day</option>
+                  </select>
+                </div>
+
+                {correctionData.work_status === 'outstation' && (
+                  <div>
+                    <Label>Outstation City</Label>
+                    <Input 
+                      value={correctionData.outstation_city}
+                      onChange={(e) => setCorrectionData({...correctionData, outstation_city: e.target.value})}
+                      placeholder="Enter city name"
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label>Correction Reason <span className="text-red-600">*</span></Label>
+                  <Textarea 
+                    value={correctionData.reason}
+                    onChange={(e) => setCorrectionData({...correctionData, reason: e.target.value})}
+                    placeholder="Explain why this correction is being made"
+                    rows={3}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleCorrection}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Save Correction
+                  </Button>
+                  <Button
+                    onClick={() => setCorrectingEntry(null)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

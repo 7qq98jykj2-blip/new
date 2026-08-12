@@ -52,19 +52,71 @@ export const generateSalarySlipPDF = (payrollData, driverInfo) => {
   doc.text(payrollData.total_overtime_amount.toFixed(2), 188, y, { align: 'right' });
   y += 8;
   
-  // Food Allowance
-  doc.text('Food Allowances', 22, y);
-  doc.text(payrollData.total_food_allowances.toFixed(2), 188, y, { align: 'right' });
+  // Holiday Worked Pay
+  if (payrollData.holiday_worked_pay && payrollData.holiday_worked_pay > 0) {
+    doc.text('Holiday Worked Additional Pay', 22, y);
+    doc.text(payrollData.holiday_worked_pay.toFixed(2), 188, y, { align: 'right' });
+    y += 8;
+  }
+  
+  // Weekly Off Worked Pay
+  if (payrollData.weekly_off_worked_pay && payrollData.weekly_off_worked_pay > 0) {
+    doc.text('Weekly Off Worked Additional Pay', 22, y);
+    doc.text(payrollData.weekly_off_worked_pay.toFixed(2), 188, y, { align: 'right' });
+    y += 8;
+  }
+  
+  // Conveyance
+  doc.text('Conveyance', 22, y);
+  doc.text(payrollData.total_conveyance.toFixed(2), 188, y, { align: 'right' });
   y += 8;
+  
+  // Breakfast
+  doc.text('Breakfast Allowance', 22, y);
+  doc.text(payrollData.total_breakfast.toFixed(2), 188, y, { align: 'right' });
+  y += 8;
+  
+  // Dinner
+  doc.text('Dinner Allowance', 22, y);
+  doc.text(payrollData.total_dinner.toFixed(2), 188, y, { align: 'right' });
+  y += 8;
+  
+  // Bonuses
+  if (payrollData.total_bonuses > 0) {
+    doc.text('Bonuses', 22, y);
+    doc.text(payrollData.total_bonuses.toFixed(2), 188, y, { align: 'right' });
+    y += 8;
+  }
   
   // Expenses
   doc.text('Miscellaneous Expenses', 22, y);
   doc.text(payrollData.total_expenses.toFixed(2), 188, y, { align: 'right' });
   y += 8;
   
-  // Deductions
+  // Advances
+  if (payrollData.total_advances > 0) {
+    doc.text('Advances', 22, y);
+    doc.text(`-${payrollData.total_advances.toFixed(2)}`, 188, y, { align: 'right' });
+    y += 8;
+  }
+  
+  // Leave Deductions
+  if (payrollData.leave_deductions > 0) {
+    doc.text('Leave Deductions', 22, y);
+    doc.text(`-${payrollData.leave_deductions.toFixed(2)}`, 188, y, { align: 'right' });
+    y += 8;
+  }
+  
+  // Loan Deductions
+  if (payrollData.loan_deductions > 0) {
+    doc.text('Loan Deductions', 22, y);
+    doc.text(`-${payrollData.loan_deductions.toFixed(2)}`, 188, y, { align: 'right' });
+    y += 8;
+  }
+  
+  // Other Deductions
   if (payrollData.deductions > 0) {
-    doc.text('Deductions', 22, y);
+    doc.text('Other Deductions', 22, y);
     doc.text(`-${payrollData.deductions.toFixed(2)}`, 188, y, { align: 'right' });
     y += 8;
   }
@@ -108,9 +160,17 @@ export const exportToExcel = async (payrollData, driverInfo) => {
     ['Description', 'Amount (₹)'],
     ['Base Monthly Salary', payrollData.base_salary],
     ['Overtime Pay', payrollData.total_overtime_amount],
-    ['Food Allowances', payrollData.total_food_allowances],
+    ...(payrollData.holiday_worked_pay > 0 ? [['Holiday Worked Additional Pay', payrollData.holiday_worked_pay]] : []),
+    ...(payrollData.weekly_off_worked_pay > 0 ? [['Weekly Off Worked Additional Pay', payrollData.weekly_off_worked_pay]] : []),
+    ['Conveyance', payrollData.total_conveyance],
+    ['Breakfast Allowance', payrollData.total_breakfast],
+    ['Dinner Allowance', payrollData.total_dinner],
+    ...(payrollData.total_bonuses > 0 ? [['Bonuses', payrollData.total_bonuses]] : []),
     ['Miscellaneous Expenses', payrollData.total_expenses],
-    ['Deductions', -payrollData.deductions],
+    ...(payrollData.total_advances > 0 ? [['Advances', -payrollData.total_advances]] : []),
+    ...(payrollData.leave_deductions > 0 ? [['Leave Deductions', -payrollData.leave_deductions]] : []),
+    ...(payrollData.loan_deductions > 0 ? [['Loan Deductions', -payrollData.loan_deductions]] : []),
+    ...(payrollData.deductions > 0 ? [['Other Deductions', -payrollData.deductions]] : []),
     [],
     ['Net Pay', payrollData.net_pay],
   ];

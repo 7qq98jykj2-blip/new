@@ -7,7 +7,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { api } from '../utils/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Upload, Image as ImageIcon } from 'lucide-react';
 
 export default function MiscExpenses({ user }) {
   const navigate = useNavigate();
@@ -20,7 +20,9 @@ export default function MiscExpenses({ user }) {
     date: new Date().toISOString().split('T')[0],
     category: 'parking',
     amount: '',
-    description: ''
+    description: '',
+    receipt: null,
+    receiptPreview: null
   });
 
   useEffect(() => {
@@ -58,12 +60,25 @@ export default function MiscExpenses({ user }) {
     }
 
     try {
+      let receiptUrl = null;
+      
+      // Upload receipt if provided
+      if (formData.receipt) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', formData.receipt);
+        const uploadRes = await api.post('/upload', uploadFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        receiptUrl = uploadRes.data.url;
+      }
+
       await api.post('/misc-expenses', {
         driver_id: driverId,
         date: formData.date,
         category: formData.category,
         amount: parseFloat(formData.amount),
-        description: formData.description
+        description: formData.description,
+        receipt_url: receiptUrl
       });
       
       toast.success('Expense submitted successfully');
@@ -72,11 +87,32 @@ export default function MiscExpenses({ user }) {
         date: new Date().toISOString().split('T')[0],
         category: 'parking',
         amount: '',
-        description: ''
+        description: '',
+        receipt: null,
+        receiptPreview: null
       });
       fetchExpenses();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit expense');
+    }
+  };
+
+  const handleReceiptChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('File size must be less than 2MB');
+        return;
+      }
+      if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+        toast.error('Only JPG, JPEG, and PNG formats are allowed');
+        return;
+      }
+      setFormData({
+        ...formData,
+        receipt: file,
+        receiptPreview: URL.createObjectURL(file)
+      });
     }
   };
 
@@ -175,6 +211,32 @@ export default function MiscExpenses({ user }) {
                   />
                 </div>
 
+                <div>
+                  <Label>Receipt / Photo (Optional)</Label>
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={handleReceiptChange}
+                      className="hidden"
+                      id="receipt-upload"
+                    />
+                    <label
+                      htmlFor="receipt-upload"
+                      className="flex items-center justify-center gap-2 border-2 border-dashed border-zinc-300 rounded-md p-4 cursor-pointer hover:border-emerald-500 transition-colors"
+                    >
+                      {formData.receiptPreview ? (
+                        <img src={formData.receiptPreview} alt="Receipt preview" className="h-32 object-contain" />
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-zinc-400" />
+                          <span className="text-sm text-zinc-600">Click to upload receipt (JPG, PNG, max 2MB)</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
                 <div className="flex gap-2">
                   <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
                     Submit Expense
@@ -212,6 +274,19 @@ export default function MiscExpenses({ user }) {
                       </div>
                     </div>
                     <p className="text-sm text-zinc-700 mt-2">{expense.description}</p>
+                    {expense.receipt_url && (
+                      <div className="mt-2">
+                        <a 
+                          href={expense.receipt_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                        >
+                          <ImageIcon className="w-3 h-3" />
+                          View Receipt
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

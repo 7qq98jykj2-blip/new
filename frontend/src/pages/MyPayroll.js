@@ -11,6 +11,7 @@ export default function MyPayroll({ user }) {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [payroll, setPayroll] = useState(null);
   const [driverId, setDriverId] = useState(null);
+  const [driverInfo, setDriverInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +19,10 @@ export default function MyPayroll({ user }) {
   }, []);
 
   useEffect(() => {
-    if (driverId) fetchPayroll();
+    if (driverId) {
+      fetchPayroll();
+      fetchDriverInfo();
+    }
   }, [driverId, year, month]);
 
   const fetchDriver = async () => {
@@ -79,15 +83,44 @@ export default function MyPayroll({ user }) {
             ) : !payroll ? (
               <p className="text-center py-8 text-zinc-500">No payroll data for this month</p>
             ) : (
-              <div className="text-center py-12">
-                <DollarSign className="w-16 h-16 mx-auto mb-4 text-emerald-600" />
-                <h2 className="text-2xl font-semibold text-emerald-950 mb-2">
-                  {new Date(year, month-1).toLocaleString('en', {month: 'long', year: 'numeric'})}
-                </h2>
-                <div className="text-5xl font-bold text-emerald-600 mb-4">
-                  ₹{payroll.net_pay.toLocaleString('en-IN')}
+              <div>
+                <div className="text-center py-12">
+                  <DollarSign className="w-16 h-16 mx-auto mb-4 text-emerald-600" />
+                  <h2 className="text-2xl font-semibold text-emerald-950 mb-2">
+                    {new Date(year, month-1).toLocaleString('en', {month: 'long', year: 'numeric'})}
+                  </h2>
+                  <div className="text-5xl font-bold text-emerald-600 mb-4">
+                    ₹{payroll.net_pay.toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-zinc-600">Final Amount Paid</p>
                 </div>
-                <p className="text-zinc-600">Final Amount Paid</p>
+                
+                {driverInfo && (
+                  <div className="flex justify-center mt-6">
+                    <Button
+                      onClick={handleDownloadPDF}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Salary Slip
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}
+ssName="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Salary Slip
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
