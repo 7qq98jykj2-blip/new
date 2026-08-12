@@ -74,6 +74,7 @@ class LeaveRecordCreate(BaseModel):
     driver_id: str
     date: str
     reason: str
+    leave_type: str = 'unpaid'  # 'unpaid' or 'vacation'
 
 class LeaveRecordResponse(BaseModel):
     id: str
@@ -263,7 +264,12 @@ async def create_leave_record(leave_data: LeaveRecordCreate):
     
     # Pro-rata deduction per day
     daily_salary = driver['base_salary'] / days_in_month
-    deduction_amount = daily_salary
+    
+    # Vacation/approved leave has no deduction
+    if leave_data.leave_type == 'vacation':
+        deduction_amount = 0.0
+    else:
+        deduction_amount = daily_salary
     
     leave_id = str(uuid.uuid4())
     leave_doc = {

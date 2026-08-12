@@ -297,6 +297,8 @@ class PayrollResponse(BaseModel):
     total_advances: float
     leave_deductions: float
     loan_deductions: float
+    holiday_worked_pay: float
+    weekly_off_worked_pay: float
     deductions: float
     net_pay: float
     duty_entries: List[dict]
@@ -1029,12 +1031,24 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
     # Calculate loan deductions for this month
     total_loan_deductions = sum([loan['monthly_deduction'] for loan in active_loans])
     
+    # Calculate daily rate using existing established methodology
+    daily_rate = driver['base_salary'] / settings.get('days_in_month', 30)
+    
+    # Holiday Worked Pay (approved entries only)
+    holiday_worked_count = sum([1 for e in duty_entries if e.get('work_status') == 'holiday_worked'])
+    holiday_worked_pay = holiday_worked_count * daily_rate
+    
+    # Weekly Off Worked Pay (approved entries only)
+    weekly_off_worked_count = sum([1 for e in duty_entries if e.get('work_status') == 'weekly_off_worked'])
+    weekly_off_worked_pay = weekly_off_worked_count * daily_rate
+    
     # Other deductions (can be extended)
     other_deductions = 0
     
     # Net pay calculation
     net_pay = (driver['base_salary'] + total_overtime_amount + total_conveyance + 
-               total_dinner + total_breakfast + total_expenses + total_bonuses - total_advances - 
+               total_dinner + total_breakfast + total_expenses + total_bonuses + 
+               holiday_worked_pay + weekly_off_worked_pay - total_advances - 
                leave_deductions - total_loan_deductions - other_deductions)
     
     return PayrollResponse(
@@ -1052,6 +1066,8 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
         total_advances=round(total_advances, 2),
         leave_deductions=round(leave_deductions, 2),
         loan_deductions=round(total_loan_deductions, 2),
+        holiday_worked_pay=round(holiday_worked_pay, 2),
+        weekly_off_worked_pay=round(weekly_off_worked_pay, 2),
         deductions=round(other_deductions, 2),
         net_pay=round(net_pay, 2),
         duty_entries=[{
@@ -1061,7 +1077,9 @@ async def calculate_payroll(driver_id: str, year: int, month: int, user: dict = 
             'conveyance_given': e.get('conveyance_given', False),
             'dinner_given': e.get('dinner_given', False),
             'breakfast_given': e.get('breakfast_given', False),
-            'approval_status': e.get('approval_status', 'pending')
+            'approval_status': e.get('approval_status', 'pending'),
+            'work_status': e.get('work_status', 'present'),
+            'outstation_city': e.get('outstation_city')
         } for e in duty_entries],
         expenses=[{
             'date': e['date'],
