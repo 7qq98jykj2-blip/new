@@ -128,9 +128,11 @@ class DutyEntryCreate(BaseModel):
     date: str
     in_time: str
     out_time: str
-    details: Optional[str] = None  # Mandatory for overtime
-    remark_type: Optional[str] = None  # None, 'misc', 'extra_duty_day'
+    details: Optional[str] = None
+    remark_type: Optional[str] = None
     remark_text: Optional[str] = None
+    work_status: str = 'present'  # present, vacation, holiday_worked, weekly_off_worked, outstation
+    outstation_city: Optional[str] = None  # Mandatory if work_status=outstation
 
 class DutyEntryUpdate(BaseModel):
     in_time: Optional[str] = None
@@ -139,7 +141,9 @@ class DutyEntryUpdate(BaseModel):
     remark_type: Optional[str] = None
     remark_text: Optional[str] = None
     admin_remarks: Optional[str] = None
-    overtime_minutes: Optional[int] = None  # Admin can modify
+    overtime_minutes: Optional[int] = None
+    work_status: Optional[str] = None
+    outstation_city: Optional[str] = None
 
 class DutyEntryResponse(BaseModel):
     id: str
@@ -153,15 +157,17 @@ class DutyEntryResponse(BaseModel):
     conveyance_given: bool
     dinner_given: bool
     breakfast_given: bool
-    approval_status: str  # pending, approved, rejected
+    approval_status: str
     details: Optional[str] = None
     remark_type: Optional[str] = None
     remark_text: Optional[str] = None
     admin_remarks: Optional[str] = None
     early_departure: bool = False
     early_departure_minutes: int = 0
-    edit_count: int = 0  # Track how many times edited
-    can_edit: bool = True  # Can driver still edit this?
+    edit_count: int = 0
+    can_edit: bool = True
+    work_status: str = 'present'
+    outstation_city: Optional[str] = None
     created_at: str
 
 class DutyApprovalUpdate(BaseModel):
@@ -590,6 +596,10 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
     if details['overtime_minutes'] > 0 and not entry_data.details:
         raise HTTPException(status_code=400, detail='Details are mandatory when overtime is worked')
     
+    # Validate: City mandatory if outstation
+    if entry_data.work_status == 'outstation' and not entry_data.outstation_city:
+        raise HTTPException(status_code=400, detail='City is mandatory for outstation work')
+    
     # Check for early departure (>30 minutes before standard hours)
     in_time = datetime.fromisoformat(entry_data.in_time)
     out_time = datetime.fromisoformat(entry_data.out_time)
@@ -626,6 +636,8 @@ async def create_duty_entry(entry_data: DutyEntryCreate, user: dict = Depends(ge
         'early_departure_minutes': early_departure_minutes,
         'edit_count': 0,
         'can_edit': True,
+        'work_status': entry_data.work_status,
+        'outstation_city': entry_data.outstation_city,
         'created_at': datetime.now(timezone.utc).isoformat()
     }
     
@@ -1205,6 +1217,10 @@ app.include_router(file_upload_router, prefix="/api")
 # Include loans routes
 from loans_routes import router as loans_router
 app.include_router(loans_router)
+
+# Include attendance enhancements
+from attendance_enhancements import router as attendance_router
+app.include_router(attendance_router)
 
 app.add_middleware(
     CORSMiddleware,
