@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { api } from '../utils/api';
-import { ArrowLeft, DollarSign } from 'lucide-react';
+import { ArrowLeft, DollarSign, Download } from 'lucide-react';
+import { generateSalarySlipPDF } from '../utils/pdfGenerator';
+import { toast } from 'sonner';
 
 export default function MyPayroll({ user }) {
   const navigate = useNavigate();
@@ -40,6 +42,22 @@ export default function MyPayroll({ user }) {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDriverInfo = async () => {
+    try {
+      const res = await api.get(`/drivers/${driverId}`);
+      setDriverInfo(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (payroll && driverInfo) {
+      generateSalarySlipPDF(payroll, driverInfo);
+      toast.success('Salary slip downloaded successfully');
     }
   };
 
@@ -100,21 +118,6 @@ export default function MyPayroll({ user }) {
                     <Button
                       onClick={handleDownloadPDF}
                       className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Salary Slip
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
-  );
-}
-ssName="bg-emerald-600 hover:bg-emerald-700"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download Salary Slip

@@ -8,7 +8,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-UPLOAD_DIR = Path("/app/uploads")
+UPLOAD_DIR = Path(os.environ.get('UPLOAD_DIR', '/app/uploads'))
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # Allowed formats and max size
