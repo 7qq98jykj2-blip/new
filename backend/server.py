@@ -60,6 +60,8 @@ class DriverCreate(BaseModel):
     job_start_date: str
     base_salary: float
     standard_hours: float
+    weekly_off_day: str = 'sunday'  # Individual driver weekly off (saturday/sunday)
+
     driver_photo: Optional[str] = None
     aadhaar_card_photo: Optional[str] = None
     pan_card_photo: Optional[str] = None
@@ -84,6 +86,8 @@ class DriverUpdate(BaseModel):
     base_salary: Optional[float] = None
     standard_hours: Optional[float] = None
     driver_photo: Optional[str] = None
+    weekly_off_day: Optional[str] = None
+
     aadhaar_card_photo: Optional[str] = None
     pan_card_photo: Optional[str] = None
     other_kyc_document: Optional[str] = None

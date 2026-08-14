@@ -53,3 +53,4 @@ Thumbs.db
 # DO NOT IGNORE .env FILES - Required for Emergent deployment
 # .env files MUST be tracked in repository for deployment
 frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/0.pack
