@@ -1245,6 +1245,8 @@ from attendance_enhancements import router as attendance_router
 app.include_router(attendance_router)
 
 app.add_middleware(
+app.include_router(payroll_history_router)
+
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),

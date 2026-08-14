@@ -201,18 +201,18 @@ export default function MiscExpenses({ user }) {
                 </div>
 
                 <div>
-                  <Label>Description</Label>
+                  <Label>Description/Remark {formData.category === 'other' && <span className="text-red-600">*</span>}</Label>
                   <Textarea 
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    placeholder="Provide details about this expense"
+                    placeholder={formData.category === 'other' ? 'Required for Other category' : 'Optional details'}
                     rows={3}
-                    required
+                    required={formData.category === 'other'}
                   />
                 </div>
 
                 <div>
-                  <Label>Receipt / Photo (Optional)</Label>
+                  <Label>Receipt/Photo {['parking', 'tolls'].includes(formData.category) && <span className="text-red-600">*</span>}</Label>
                   <div className="mt-2">
                     <input
                       type="file"
